@@ -73,6 +73,19 @@ namespace XiaoYu_LAM
                 MessageBox.Show("读取配置文件时发生错误：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 toolStripStatusLabel1.Text = "读取配置文件失败";
             }
+            
+            //将配置显示到设置页面里
+            textBox1.Text = API_URL;
+            textBox3.Text = API_KEY;
+            textBox2.Text = MODEL_NAME;
+            if(PROTOCOL == "OpenAI")
+            {
+                IsOpenAICheckBox.Checked = true;
+            }
+            else if(PROTOCOL == "Anthropic")
+            {
+                IsAnthropicCheckBox.Checked = true;
+            }
         }
 
         public void AppendLog(string role, string message)
@@ -85,9 +98,9 @@ namespace XiaoYu_LAM
 
             // 格式化日志
             string time = DateTime.Now.ToString("HH:mm:ss");
-            richTextBox1.SelectionColor = role == "AI" ? Color.Blue : (role == "System" ? Color.Red : Color.Black);
-            richTextBox1.AppendText($"[{time}] <{role}>: {message}\n\n");
-            richTextBox1.ScrollToCaret(); // 滚动到最下面
+            LogrichTextBox1.SelectionColor = role == "AI" ? Color.Blue : (role == "System" ? Color.Red : Color.Black);
+            LogrichTextBox1.AppendText($"[{time}] <{role}>: {message}\n\n");
+            LogrichTextBox1.ScrollToCaret(); // 滚动到最下面
         }
 
         public void UpdateVisionImage_bak(Bitmap bmp)
@@ -114,37 +127,21 @@ namespace XiaoYu_LAM
                 this.Invoke(new Action(() => UpdateVisionImage(bmp)));
                 return;
             }
-
-            // 2. 暂存并断开旧图片引用
-            // 这里必须先设为 null，否则在 Dispose 时 PictureBox 可能会尝试重绘已释放的资源导致红叉或崩溃
             Image oldImage = pictureBox1.Image;
             pictureBox1.Image = null;
-
-            // 3. 立即销毁旧图片
-            // 释放 GDI+ 句柄和非托管内存，这是降内存的关键
             if (oldImage != null)
             {
                 oldImage.Dispose();
             }
-
-            // 4. 赋值新图片
-            // 使用 new Bitmap(bmp) 进行深拷贝是正确的，这防止了源 bmp 在其他线程被 Dispose 后导致 UI 崩溃
             if (bmp != null)
             {
                 pictureBox1.Image = new Bitmap(bmp);
             }
-
-            // 5. 【关键优化】强制垃圾回收
-            // 通常不建议手动调用 GC，但在处理大量 Bitmap/GDI 对象时，这是标准做法。
-            // 因为 Bitmap 占用的是"非托管堆"，CLR 经常感知不到内存压力而不去回收。
-            // 这行代码会强制 CLR 立即清理刚才 Dispose 掉的旧图片内存。
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
         }
 
         private void 关于晓予ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string appName = "晓予";
+            string appName = "Windows晓予";
             string otherStuff = "版本: 0.1 (Beta)\n基于无障碍接口让LLM操作Windows";
             IntPtr iconHandle = this.Icon != null ? this.Icon.Handle : IntPtr.Zero;
 
