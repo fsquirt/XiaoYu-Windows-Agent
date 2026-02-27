@@ -68,7 +68,7 @@ namespace XiaoYu_LAM
             _chatHistory = new List<ChatMessage>();
 
             // 读取 System Prompt
-            string sysPromptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "markdown", "SystemPrompt.md");
+            string sysPromptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MarkDown", "SystemPrompt.md");
             string sysPrompt = "";
             if (File.Exists(sysPromptPath))
             {
@@ -282,7 +282,7 @@ namespace XiaoYu_LAM
         // --- 辅助：初始化 Markdown 文件 ---
         private void InitMarkdownFile()
         {
-            string dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "markdown", "conversation");
+            string dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MarkDown", "conversation");
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
 
             string timestamp = DateTime.Now.ToString("yyyyMMdd_HHmmss");
