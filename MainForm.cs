@@ -52,6 +52,11 @@ namespace XiaoYu_LAM
                         PROTOCOL = config["PROTOCOL"];
                         API_URL = config["API_URL"];
                         API_KEY = config["API_KEY"];
+
+                        if((MODEL_NAME == "") || (PROTOCOL == "") || (API_KEY == "") || (API_URL == ""))
+                        {
+                            toolStripStatusLabel1.Text = "配置文件缺少字段！请在欢迎窗口重新配置并验证可用性";
+                        }
                     }
                     else
                     {

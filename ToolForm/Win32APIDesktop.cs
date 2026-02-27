@@ -125,6 +125,7 @@ namespace XiaoYu_LAM.ToolForm
         {
             IntPtr hDesktop = CreateDesktop(desktopName, IntPtr.Zero, IntPtr.Zero, 0, GENERIC_ALL, IntPtr.Zero);
             SwitchDesktop(hDesktop);
+
         }
 
         private void button3_Click(object sender, EventArgs e)

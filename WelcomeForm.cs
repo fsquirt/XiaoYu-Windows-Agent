@@ -74,7 +74,6 @@ namespace XiaoYu_LAM
                 this.Text = this.Text + "（管理员权限）";
             }
 
-            // 从程序目录下的 config.ini 文件中读取配置
             try
             {
                 string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
@@ -99,7 +98,7 @@ namespace XiaoYu_LAM
                     toolStripStatusLabel1.Text = "这好像是你第一次使用，请使用支持输入图片的LLM";
                 }
             }
-            catch (Exception ex)
+            catch
             {
                 toolStripStatusLabel1.Text = "就绪";
             }
@@ -133,7 +132,7 @@ namespace XiaoYu_LAM
 
                 toolStripStatusLabel1.Text = "正在等待" + API_URL + "响应";
 
-                ChatCompletion completion = client.CompleteChat("爱你");
+                ChatCompletion completion = client.CompleteChat("速速回我任意内容，我正在测试和你的聊天API是否正常");
                 Console.WriteLine($"[ASSISTANT]: {completion.Content[0].Text}");
                 toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + completion.Content[0].Text.Substring(0,15).Replace('\n','。') + "..."; //取15个够了多了会打乱ui
                 button2.Text = "验证通过";
@@ -184,7 +183,7 @@ namespace XiaoYu_LAM
         private void label2_Click(object sender, EventArgs e)
         {
             ClickLabel1Time++;
-            if (ClickLabel1Time >= 1)
+            if (ClickLabel1Time >= 15)
             {
                 Win32APIDesktop scanWindow = new Win32APIDesktop();
                 scanWindow.Show();

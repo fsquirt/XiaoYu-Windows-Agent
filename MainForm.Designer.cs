@@ -40,7 +40,7 @@
             this.退出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.选项OToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.前端显示ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.开机启动ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.接入QQToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.查看VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -164,27 +164,27 @@
             // 新建任务ToolStripMenuItem
             // 
             this.新建任务ToolStripMenuItem.Name = "新建任务ToolStripMenuItem";
-            this.新建任务ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.新建任务ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.新建任务ToolStripMenuItem.Text = "启动聊天";
             this.新建任务ToolStripMenuItem.Click += new System.EventHandler(this.新建任务ToolStripMenuItem_Click);
             // 
             // 保存日志ToolStripMenuItem
             // 
             this.保存日志ToolStripMenuItem.Name = "保存日志ToolStripMenuItem";
-            this.保存日志ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.保存日志ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.保存日志ToolStripMenuItem.Text = "保存日志";
             // 
             // 退出ToolStripMenuItem
             // 
             this.退出ToolStripMenuItem.Name = "退出ToolStripMenuItem";
-            this.退出ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.退出ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.退出ToolStripMenuItem.Text = "退出";
             // 
             // 选项OToolStripMenuItem
             // 
             this.选项OToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.前端显示ToolStripMenuItem,
-            this.开机启动ToolStripMenuItem,
+            this.接入QQToolStripMenuItem,
             this.设置ToolStripMenuItem});
             this.选项OToolStripMenuItem.Name = "选项OToolStripMenuItem";
             this.选项OToolStripMenuItem.Size = new System.Drawing.Size(62, 21);
@@ -193,19 +193,19 @@
             // 前端显示ToolStripMenuItem
             // 
             this.前端显示ToolStripMenuItem.Name = "前端显示ToolStripMenuItem";
-            this.前端显示ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.前端显示ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.前端显示ToolStripMenuItem.Text = "前端显示";
             // 
-            // 开机启动ToolStripMenuItem
+            // 接入QQToolStripMenuItem
             // 
-            this.开机启动ToolStripMenuItem.Name = "开机启动ToolStripMenuItem";
-            this.开机启动ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
-            this.开机启动ToolStripMenuItem.Text = "开机启动";
+            this.接入QQToolStripMenuItem.Name = "接入QQToolStripMenuItem";
+            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.接入QQToolStripMenuItem.Text = "接入QQ";
             // 
             // 设置ToolStripMenuItem
             // 
             this.设置ToolStripMenuItem.Name = "设置ToolStripMenuItem";
-            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.设置ToolStripMenuItem.Text = "设置";
             // 
             // 查看VToolStripMenuItem
@@ -220,7 +220,7 @@
             // 刷新ToolStripMenuItem
             // 
             this.刷新ToolStripMenuItem.Name = "刷新ToolStripMenuItem";
-            this.刷新ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.刷新ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.刷新ToolStripMenuItem.Text = "刷新";
             // 
             // 更新速度ToolStripMenuItem
@@ -230,7 +230,7 @@
             this.正常ToolStripMenuItem,
             this.低ToolStripMenuItem});
             this.更新速度ToolStripMenuItem.Name = "更新速度ToolStripMenuItem";
-            this.更新速度ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.更新速度ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.更新速度ToolStripMenuItem.Text = "更新速度";
             // 
             // 高ToolStripMenuItem
@@ -263,13 +263,13 @@
             // 关于ToolStripMenuItem
             // 
             this.关于ToolStripMenuItem.Name = "关于ToolStripMenuItem";
-            this.关于ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.关于ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.关于ToolStripMenuItem.Text = "查看帮助";
             // 
             // 关于晓予ToolStripMenuItem
             // 
             this.关于晓予ToolStripMenuItem.Name = "关于晓予ToolStripMenuItem";
-            this.关于晓予ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.关于晓予ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.关于晓予ToolStripMenuItem.Text = "关于晓予";
             this.关于晓予ToolStripMenuItem.Click += new System.EventHandler(this.关于晓予ToolStripMenuItem_Click);
             // 
@@ -731,7 +731,7 @@
         private System.Windows.Forms.ToolStripMenuItem 保存日志ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 退出ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 前端显示ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 开机启动ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 接入QQToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 设置ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 刷新ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 更新速度ToolStripMenuItem;

@@ -1,3 +1,9 @@
 <Solution>
-  <Project Path="XiaoYu_LAM.csproj" Id="7e92450b-a800-4f3a-8547-6e4458d3922a" />
+  <Configurations>
+    <Platform Name="Any CPU" />
+    <Platform Name="x64" />
+  </Configurations>
+  <Project Path="XiaoYu_LAM.csproj" Id="7e92450b-a800-4f3a-8547-6e4458d3922a">
+    <Platform Solution="*|x64" Project="x64" />
+  </Project>
 </Solution>

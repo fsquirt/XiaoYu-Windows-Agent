@@ -230,7 +230,7 @@
             this.Controls.Add(this.label1);
             this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "WelcomeForm";
-            this.Text = "晓予-配置向导页面";
+            this.Text = "Windows 晓予-配置向导页面";
             this.Load += new System.EventHandler(this.WelcomeForm_Load);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();

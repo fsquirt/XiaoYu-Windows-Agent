@@ -44,6 +44,8 @@ namespace XiaoYu_LAM
         private async void btnExecute_Click(object sender, EventArgs e)
         {
             toolStripLabel1.Text = "正在执行任务...";
+            toolStripLabel1.Image  = Properties.Resources.WorkingIcon; // 设置加载动画
+
             string taskPrompt = txtInput.Text.Trim();
             if (string.IsNullOrEmpty(taskPrompt)) return;
 
@@ -115,6 +117,7 @@ namespace XiaoYu_LAM
                 _cts?.Dispose();
                 _cts = null;
                 toolStripLabel1.Text = "任务执行完毕";
+                toolStripLabel1.Image = Properties.Resources.ReadyIcon;
             }
         }
 
@@ -124,6 +127,7 @@ namespace XiaoYu_LAM
             _cts?.Cancel();
             btnStop.Enabled = false;
             toolStripLabel1.Text = "任务已终止";
+            toolStripLabel1.Image = Properties.Resources.WarnIcon;
         }
 
         // --- 核心优化：Token 瘦身器 (修剪历史上下文) ---
