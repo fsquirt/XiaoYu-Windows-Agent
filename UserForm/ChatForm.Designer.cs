@@ -37,7 +37,7 @@
             this.label1 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.comboBox1 = new System.Windows.Forms.ComboBox();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.ConversationRichTextBox = new System.Windows.Forms.RichTextBox();
             this.toolStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -122,23 +122,24 @@
             this.comboBox1.Name = "comboBox1";
             this.comboBox1.Size = new System.Drawing.Size(446, 24);
             this.comboBox1.TabIndex = 5;
+            this.comboBox1.SelectedIndexChanged += new System.EventHandler(this.comboBox1_SelectedIndexChanged);
             // 
-            // richTextBox1
+            // ConversationRichTextBox
             // 
-            this.richTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
-            this.richTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.richTextBox1.Location = new System.Drawing.Point(0, 41);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.Size = new System.Drawing.Size(446, 226);
-            this.richTextBox1.TabIndex = 6;
-            this.richTextBox1.Text = "";
+            this.ConversationRichTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.ConversationRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ConversationRichTextBox.Location = new System.Drawing.Point(0, 41);
+            this.ConversationRichTextBox.Name = "ConversationRichTextBox";
+            this.ConversationRichTextBox.Size = new System.Drawing.Size(446, 226);
+            this.ConversationRichTextBox.TabIndex = 6;
+            this.ConversationRichTextBox.Text = "";
             // 
             // ChatForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 16F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(446, 362);
-            this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.ConversationRichTextBox);
             this.Controls.Add(this.comboBox1);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.label1);
@@ -167,6 +168,6 @@
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.ComboBox comboBox1;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.RichTextBox ConversationRichTextBox;
     }
 }

@@ -71,6 +71,7 @@
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.IsHideUIAoutInChatForm = new System.Windows.Forms.CheckBox();
             this.IsDeleteHistoryPic = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
             this.button4 = new System.Windows.Forms.Button();
@@ -84,7 +85,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.IsHideUIAoutInChatForm = new System.Windows.Forms.CheckBox();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -464,6 +464,16 @@
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "对话设置";
             // 
+            // IsHideUIAoutInChatForm
+            // 
+            this.IsHideUIAoutInChatForm.AutoSize = true;
+            this.IsHideUIAoutInChatForm.Location = new System.Drawing.Point(10, 45);
+            this.IsHideUIAoutInChatForm.Name = "IsHideUIAoutInChatForm";
+            this.IsHideUIAoutInChatForm.Size = new System.Drawing.Size(192, 21);
+            this.IsHideUIAoutInChatForm.TabIndex = 1;
+            this.IsHideUIAoutInChatForm.Text = "在聊天窗口中隐藏UIA引擎输出";
+            this.IsHideUIAoutInChatForm.UseVisualStyleBackColor = true;
+            // 
             // IsDeleteHistoryPic
             // 
             this.IsDeleteHistoryPic.AutoSize = true;
@@ -592,18 +602,6 @@
             this.label1.Size = new System.Drawing.Size(54, 17);
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
-            // 
-            // IsHideUIAoutInChatForm
-            // 
-            this.IsHideUIAoutInChatForm.AutoSize = true;
-            this.IsHideUIAoutInChatForm.Checked = true;
-            this.IsHideUIAoutInChatForm.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.IsHideUIAoutInChatForm.Location = new System.Drawing.Point(10, 45);
-            this.IsHideUIAoutInChatForm.Name = "IsHideUIAoutInChatForm";
-            this.IsHideUIAoutInChatForm.Size = new System.Drawing.Size(192, 21);
-            this.IsHideUIAoutInChatForm.TabIndex = 1;
-            this.IsHideUIAoutInChatForm.Text = "在聊天窗口中隐藏UIA引擎输出";
-            this.IsHideUIAoutInChatForm.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 

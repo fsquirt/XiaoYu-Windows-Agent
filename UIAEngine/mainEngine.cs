@@ -13,6 +13,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Windows.Forms;
 
 namespace XiaoYu_LAM.UIAEngine
 {
@@ -230,7 +231,8 @@ namespace XiaoYu_LAM.UIAEngine
 
                         // 过滤无名窗口、特定系统窗口
                         if (string.IsNullOrWhiteSpace(title)) continue;
-                        if (title == "任务切换" || title == "Program Manager" || title == "任务栏") continue;
+                        //if (title == "任务切换" || title == "Program Manager" || title == "任务栏") continue;
+                        if (title == "任务切换" || title == "Program Manager") continue;
 
                         var rect = win.BoundingRectangle;
                         if (rect.Width <= 0 || rect.Height <= 0) continue;
@@ -276,6 +278,7 @@ namespace XiaoYu_LAM.UIAEngine
             catch (Exception ex)
             {
                 Console.WriteLine("获取窗口列表失败: " + ex.Message);
+                
             }
 
             StringBuilder sb = new StringBuilder();
@@ -326,9 +329,7 @@ namespace XiaoYu_LAM.UIAEngine
             catch (Exception ex) { return $"最大化窗口失败: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 获取全屏截图（主显示器）
-        /// </summary>
+
         [Description("截取整个电脑桌面的全屏画面。当你迷失方向，或者找不到特定窗口时使用。")]
         public string GetFullScreen()
         {
@@ -344,9 +345,7 @@ namespace XiaoYu_LAM.UIAEngine
 
         #region LLM 核心接口：扫描 (Scan)
 
-        /// <summary>
-        /// 扫描指定窗口的常规可交互控件
-        /// </summary>
+
         [Description("常规扫描窗口，获取带有编号红框的控件截图。必须提供纯数字句柄。")]
         public string ScanWindow([Description("窗口的纯数字句柄")] long hWnd)
         {
@@ -369,9 +368,6 @@ namespace XiaoYu_LAM.UIAEngine
             return ScanInternal(handle, typeCondition, false, "窗口常规控件");
         }
 
-        /// <summary>
-        /// 单独扫描指定窗口的 Image 控件 (降低常规扫描的信息密度)
-        /// </summary>
         [Description("单独扫描纯图片控件。当常规扫描漏掉了某些看起来像按钮的图标时使用。")]
         public string ScanImageControls([Description("窗口的纯数字句柄")] long hWnd)
         {
@@ -384,59 +380,65 @@ namespace XiaoYu_LAM.UIAEngine
         private string ScanInternal(IntPtr hWnd, ConditionBase condition, bool isImageOnly, string scanType)
         {
             _lastScanElements.Clear();
-            var targetWindow = _automation.FromHandle(hWnd);
-            if (targetWindow == null) return "错误：无法获取窗口 UIA 节点，可能句柄已失效。";
-
-            Bitmap originalBmp = CaptureWindowByHandle(hWnd);
-            if (originalBmp == null) originalBmp = new Bitmap(targetWindow.Capture());
-            Bitmap drawnBmp = new Bitmap(originalBmp);
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"【执行结果: {scanType}扫描完毕】");
-            sb.AppendLine("已提供包含编号的标记图。以下是识别到的控件信息：");
-
-            using (Graphics g = Graphics.FromImage(drawnBmp))
+            try
             {
-                Pen redPen = new Pen(Color.Red, 2);
-                Font font = new Font("Arial", 9, FontStyle.Bold);
-                SolidBrush textBrush = new SolidBrush(Color.White);
-                SolidBrush bgBrush = new SolidBrush(Color.Blue);
+                var targetWindow = _automation.FromHandle(hWnd);
+                if (targetWindow == null) return "错误：无法获取窗口 UIA 节点，可能句柄已失效。";
 
-                var rawElements = targetWindow.FindAll(TreeScope.Descendants, condition);
-                var optimizedElements = OptimizeElements(rawElements, isImageOnly);
+                Bitmap originalBmp = CaptureWindowByHandle(hWnd);
+                if (originalBmp == null) originalBmp = new Bitmap(targetWindow.Capture());
+                Bitmap drawnBmp = new Bitmap(originalBmp);
 
-                int index = 1;
-                var winRect = targetWindow.BoundingRectangle;
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"【执行结果: {scanType}扫描完毕】");
+                sb.AppendLine("已提供包含编号的标记图。以下是识别到的控件信息：");
 
-                foreach (var elData in optimizedElements)
+                using (Graphics g = Graphics.FromImage(drawnBmp))
                 {
-                    var rect = elData.Rect;
-                    int relativeX = Math.Max(0, (int)(rect.Left - winRect.Left));
-                    int relativeY = Math.Max(0, (int)(rect.Top - winRect.Top));
+                    Pen redPen = new Pen(Color.Red, 2);
+                    Font font = new Font("Arial", 9, FontStyle.Bold);
+                    SolidBrush textBrush = new SolidBrush(Color.White);
+                    SolidBrush bgBrush = new SolidBrush(Color.Blue);
 
-                    g.DrawRectangle(redPen, relativeX, relativeY, (int)rect.Width, (int)rect.Height);
-                    string idText = index.ToString();
-                    g.FillRectangle(bgBrush, relativeX, relativeY, idText.Length * 10 + 5, 14);
-                    g.DrawString(idText, font, textBrush, relativeX, relativeY - 1);
+                    var rawElements = targetWindow.FindAll(TreeScope.Descendants, condition);
+                    var optimizedElements = OptimizeElements(rawElements, isImageOnly);
 
-                    _lastScanElements[index] = elData.Element;
-                    string controlName = elData.Element.Properties.Name.ValueOrDefault;
-                    if (string.IsNullOrWhiteSpace(controlName)) controlName = "<无名>";
+                    int index = 1;
+                    var winRect = targetWindow.BoundingRectangle;
 
-                    sb.AppendLine($"ID: {index} ->[{elData.Type}] {controlName}");
-                    index++;
+                    foreach (var elData in optimizedElements)
+                    {
+                        var rect = elData.Rect;
+                        int relativeX = Math.Max(0, (int)(rect.Left - winRect.Left));
+                        int relativeY = Math.Max(0, (int)(rect.Top - winRect.Top));
+
+                        g.DrawRectangle(redPen, relativeX, relativeY, (int)rect.Width, (int)rect.Height);
+                        string idText = index.ToString();
+                        g.FillRectangle(bgBrush, relativeX, relativeY, idText.Length * 10 + 5, 14);
+                        g.DrawString(idText, font, textBrush, relativeX, relativeY - 1);
+
+                        _lastScanElements[index] = elData.Element;
+                        string controlName = elData.Element.Properties.Name.ValueOrDefault;
+                        if (string.IsNullOrWhiteSpace(controlName)) controlName = "<无名>";
+
+                        sb.AppendLine($"ID: {index} ->[{elData.Type}] {controlName}");
+                        index++;
+                    }
                 }
+
+                // 触发事件将图片发送给 MSAF 拦截器和 UI 界面
+                OnScanCompleted?.Invoke(drawnBmp, originalBmp);
+
+                return sb.ToString();
             }
-
-            // 触发事件将图片发送给 MSAF 拦截器和 UI 界面
-            OnScanCompleted?.Invoke(drawnBmp, originalBmp);
-
-            return sb.ToString();
+            catch
+            {
+                return "错误：无法获取窗口 UIA 节点，可能句柄已失效。请重新使用GetWindows最新句柄";
+            }
         }
 
-        /// <summary>
-        /// 单独扫描容器控件（列表、表格、树），用于寻找大区块以便滚动
-        /// </summary>
+
+        [Description("单独扫描容器控件（列表、表格、树），用于寻找大区块以便滚动")]
         public string ScanContainerControls([Description("窗口的纯数字句柄")] long hWnd)
         {
             IntPtr handle = new IntPtr(hWnd);

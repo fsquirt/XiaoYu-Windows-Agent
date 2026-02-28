@@ -103,12 +103,13 @@ namespace XiaoYu_LAM.AgentEngine
             // 构建 MSAF AIAgent，并把 uiEngine 里的工具全塞进去
             XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
             {
-                Name = "XiaoYu",
+                Name = "晓予",
                 ChatOptions = new ChatOptions()
                 {
                     Instructions = sysPrompt,
                     Tools = uiEngine.GetTools() // 直接获取原生工具
                 }
+                
             });
         }
 
@@ -142,17 +143,18 @@ namespace XiaoYu_LAM.AgentEngine
             return await innerChatClient.GetResponseAsync(msgList, options, cancellationToken);
         }
 
-        // 将会话输出到MarkDown文件
-        public async Task BackupSessionToMarkdown(AgentSession session, string filePath)
+        // 将会话输出到MarkDown文件，把人类可读的对话记录也存入 Markdown
+        public async Task BackupSessionToMarkdown(AgentSession session, string filePath, string chatHistoryText)
         {
             if (XiaoYuAgent == null) return;
             JsonElement sessionElement = await XiaoYuAgent.SerializeSessionAsync(session);
             string sessionJson = sessionElement.GetRawText();
 
             string markdownContent = string.Format(
-                "# XiaoYu Agent Session\n\n## Session Data\n```json\n{0}\n```\n\n## Metadata\n- Date: {1}",
-                sessionJson,
-                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss")
+                "# XiaoYu Agent Session\n\n## Metadata\n- Date: {0}\n\n## Chat History\n{1}\n\n## Session Data\n```json\n{2}\n```",
+                DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+                chatHistoryText,
+                sessionJson
             );
 
             using (StreamWriter writer = new StreamWriter(filePath, false, Encoding.UTF8))
@@ -192,39 +194,66 @@ namespace XiaoYu_LAM.AgentEngine
                 _engine = engine;
             }
 
-            // 核心注入逻辑：检查是否有待发送的图片
             private IList<ChatMessage> InjectImageIfNeeded(IList<ChatMessage> messages)
             {
+                var msgList = messages.ToList();
+
+                // 【核心新增】：动态读取主界面的 IsDeleteHistoryPic 状态，实现 Token 瘦身
+                bool isDeleteHistory = false;
+                var mf = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
+                if (mf != null)
+                {
+                    var chk = mf.Controls.Find("IsDeleteHistoryPic", true).FirstOrDefault() as CheckBox;
+                    if (chk != null) isDeleteHistory = chk.Checked;
+                }
+
+                if (isDeleteHistory)
+                {
+                    foreach (var msg in msgList)
+                    {
+                        if (msg.Role == ChatRole.Tool)
+                        {
+                            for (int i = 0; i < msg.Contents.Count; i++)
+                            {
+                                if (msg.Contents[i] is FunctionResultContent fnRes && fnRes.Result is string resStr)
+                                {
+                                    if (resStr.Contains("以下是识别到的控件信息：") || resStr.Contains("以下是识别到的图片控件信息："))
+                                    {
+                                        int cutIndex = Math.Max(resStr.IndexOf("以下是识别到的控件信息："), resStr.IndexOf("以下是识别到的图片控件信息："));
+                                        if (cutIndex >= 0)
+                                        {
+                                            string newRes = resStr.Substring(0, cutIndex) + "[...历史UI列表已折叠，以节省 Token...]\n";
+                                            msg.Contents[i] = new FunctionResultContent(fnRes.CallId, newRes);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 注入新图片
                 if (_engine.PendingImage != null)
                 {
-                    var msgList = messages.ToList(); // 复制一份以便修改
                     using (MemoryStream ms = new MemoryStream())
                     {
-                        // 将 Bitmap 转为 Jpeg 字节流
                         _engine.PendingImage.Save(ms, System.Drawing.Imaging.ImageFormat.Jpeg);
                         byte[] imgBytes = ms.ToArray();
 
-                        // 创建一个包含文字和图片的多模态 User 消息
                         var contents = new List<AIContent>
                         {
-                                new TextContent("【系统自动注入】这是最新扫描的界面截图，请结合此图的编号与刚才工具返回的列表信息，进行下一步操作："),
-                                new DataContent(imgBytes, "image/jpeg")
+                            new TextContent("【系统自动注入】这是最新扫描的界面截图，请结合此图的编号与刚才工具返回的列表信息，进行下一步操作："),
+                            new DataContent(imgBytes, "image/jpeg")
                         };
-
                         msgList.Add(new ChatMessage(ChatRole.User, contents));
                     }
 
-                    // 注入完后销毁图片并置空，防止下一轮重复发送
                     _engine.PendingImage.Dispose();
                     _engine.PendingImage = null;
-
-                    return msgList;
                 }
 
-                // 如果没有图片，直接返回原始消息列表
-                return messages;
+                return msgList;
             }
-
         }
     }
 }
