@@ -3,8 +3,10 @@ using FlaUI.Core.AutomationElements;
 using FlaUI.Core.Conditions;
 using FlaUI.Core.Definitions;
 using FlaUI.UIA3;
+using Microsoft.Extensions.AI;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
@@ -30,19 +32,15 @@ namespace XiaoYu_LAM.UIAEngine
         public string Path { get; set; }
     }
 
-    // 定义扫描结果结构
-    public class ScanResult
-    {
-        public Bitmap OriginalImage { get; set; }  // 原始干净截图
-        public Bitmap DrawnImage { get; set; }     // 带红框和ID的截图
-        public Dictionary<int, string> ElementDescriptions { get; set; } // ID 和 控件类型的描述，供 LLM 参考
-    }
 
     public class mainEngine : IDisposable
     {
         private readonly UIA3Automation _automation;
         // 核心状态：缓存最近一次扫描的控件，ID -> 控件实体
         private Dictionary<int, AutomationElement> _lastScanElements;
+
+        // 当扫描/截图产生时触发，负责把图片抛给 MSAF 和 UI，不再通过 return 返回
+        public event Action<Bitmap, Bitmap> OnScanCompleted;
 
         public mainEngine()
         {
@@ -132,8 +130,36 @@ namespace XiaoYu_LAM.UIAEngine
         private const int SW_RESTORE = 9;
         #endregion
 
-        /// 获取桌面所有快捷方式
-        public List<ShortcutInfo> GetALLDesktopLnk()
+        //导出所有 MSAF 工具
+        public List<AITool> GetTools()
+        {
+            // 将所有方法包装为原生的 AITool，并强制指定 Name 以精确对应 Prompt 里的标签名
+            // 在 .NET Framework 4.8 中，必须显式声明 Func 委托类型
+            return new List<AITool>
+            {
+                AIFunctionFactory.Create(new Func<string>(this.GetRunningWindow), name: "GetWindows"),
+                AIFunctionFactory.Create(new Func<string>(this.GetALLDesktopLnk), name: "GetShortcuts"),
+                AIFunctionFactory.Create(new Func<string>(this.GetFullScreen), name: "GetFullScreen"),
+                AIFunctionFactory.Create(new Func<long, string>(this.ScanWindow), name: "ScanWindow"),
+                AIFunctionFactory.Create(new Func<long, string>(this.ScanImageControls), name: "ScanImageControls"),
+                AIFunctionFactory.Create(new Func<long, string>(this.ScanContainerControls), name: "ScanContainerControls"),
+                AIFunctionFactory.Create(new Func<long, string>(this.RestoreWindow), name: "RestoreWindow"),
+                AIFunctionFactory.Create(new Func<long, string>(this.MaximizeWindow), name: "MaximizeWindow"),
+                AIFunctionFactory.Create(new Func<long, string>(this.NormalizeWindow), name: "NormalizeWindow"),
+                AIFunctionFactory.Create(new Func<string, string>(this.RunProgram), name: "RunProgram"),
+                AIFunctionFactory.Create(new Func<int, string>(this.PerformAction), name: "PerformAction"),
+                AIFunctionFactory.Create(new Func<int, string>(this.PerformMouseClick), name: "MouseClick"),
+                AIFunctionFactory.Create(new Func<int, string>(this.DoubleClick), name: "DoubleClick"),
+                AIFunctionFactory.Create(new Func<int, string>(this.RightClick), name: "RightClick"),
+                AIFunctionFactory.Create(new Func<int, string, string>(this.SetValue), name: "SetValue"),
+                AIFunctionFactory.Create(new Func<int, string, string>(this.TypeText), name: "TypeText"),
+                AIFunctionFactory.Create(new Func<string, string>(this.PressKey), name: "PressKey"),
+                AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll")
+            };
+        }
+
+        [Description("获取桌面所有快捷方式。返回桌面上所有的快捷方式名称和路径。如果目标软件没打开，用这个找路径。")]
+        public string GetALLDesktopLnk()
         {
             List<ShortcutInfo> shortcuts = new List<ShortcutInfo>();
 
@@ -170,11 +196,17 @@ namespace XiaoYu_LAM.UIAEngine
                 }
             }
 
-            return shortcuts;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("【执行结果: 获取桌面快捷方式】");
+            foreach (var s in shortcuts)
+            {
+                sb.AppendLine($"- 名称: {s.Name}, 路径: {s.Path}");
+            }
+            return sb.ToString();
         }
 
-        /// 获取当前所有运行中的可见窗口 (FlaUI重构版)
-        public List<WindowInfo> GetRunningWindow()
+        [Description("获取当前所有运行的窗口列表。返回包含句柄(Handle)、状态和标题的文本。这是寻找目标程序 Handle 的第一步。")]
+        public string GetRunningWindow()
         {
             List<WindowInfo> windowList = new List<WindowInfo>();
             try
@@ -246,58 +278,50 @@ namespace XiaoYu_LAM.UIAEngine
                 Console.WriteLine("获取窗口列表失败: " + ex.Message);
             }
 
-            return windowList;
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine("【执行结果: 获取窗口列表】");
+            foreach (var w in windowList)
+            {
+                sb.AppendLine($"- 句柄: {w.Handle}, 进程: {w.ProcessPath}, 状态: {w.Status}, 标题: {w.Title}");
+            }
+            return sb.ToString();
         }
 
-        /// 取消指定窗口的最小化状态
-        public string RestoreWindow(IntPtr hWnd)
+        [Description("恢复最小化的窗口。极度重要：若 GetWindows 显示窗口状态为最小化，扫描前必须执行此指令！")]
+        public string RestoreWindow([Description("窗口的纯数字句柄")] long hWnd)
         {
+            IntPtr handle = new IntPtr(hWnd);
             try
             {
-                if (hWnd != IntPtr.Zero)
-                {
-                    ShowWindow(hWnd, SW_RESTORE);
-                    return "已发送恢复窗口指令，窗口应该已回到屏幕上。请使用 <ScanWindow /> 重新获取界面。";
-                }
-                return "错误：无效的窗口句柄。";
+                if (handle == IntPtr.Zero) return "错误：无效的窗口句柄。";
+                ShowWindow(handle, SW_RESTORE);
+                return "已发送恢复窗口指令，窗口应该已回到屏幕上。请使用 ScanWindow 重新获取界面。";
             }
-            catch (Exception ex)
-            {
-                return $"恢复窗口失败: {ex.Message}";
-            }
+            catch (Exception ex) { return $"恢复窗口失败: {ex.Message}"; }
         }
 
-        /// 将最大化窗口恢复为普通窗口化
-        public string NormalizeWindow(IntPtr hWnd)
+        [Description("将最大化的窗口恢复为普通大小。")]
+        public string NormalizeWindow([Description("窗口的纯数字句柄")] long hWnd)
         {
+            IntPtr handle = new IntPtr(hWnd);
             try
             {
-                if (hWnd != IntPtr.Zero)
-                {
-                    ShowWindow(hWnd, SW_SHOWNORMAL);
-                    return "已发送普通窗口化指令。请使用 <ScanWindow /> 重新获取界面。";
-                }
-                return "错误：无效的窗口句柄。";
+                if (handle == IntPtr.Zero) return "错误：无效的窗口句柄。";
+                ShowWindow(handle, SW_SHOWNORMAL);
+                return "已发送普通窗口化指令。请使用 ScanWindow 重新获取界面。";
             }
-            catch (Exception ex)
-            {
-                return $"普通窗口化失败: {ex.Message}";
-            }
+            catch (Exception ex) { return $"普通窗口化失败: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 最大化指定窗口
-        /// </summary>
-        public string MaximizeWindow(IntPtr hWnd)
+        [Description("最大化窗口。当发现窗口太小，UI 元素重叠难以看清时使用。")]
+        public string MaximizeWindow([Description("窗口的纯数字句柄")] long hWnd)
         {
+            IntPtr handle = new IntPtr(hWnd);
             try
             {
-                if (hWnd != IntPtr.Zero)
-                {
-                    ShowWindow(hWnd, SW_SHOWMAXIMIZED);
-                    return "已发送最大化窗口指令。请使用 <ScanWindow /> 重新获取界面。";
-                }
-                return "错误：无效的窗口句柄。";
+                if (handle == IntPtr.Zero) return "错误：无效的窗口句柄。";
+                ShowWindow(handle, SW_SHOWMAXIMIZED);
+                return "已发送最大化窗口指令。请使用 ScanWindow 重新获取界面。";
             }
             catch (Exception ex) { return $"最大化窗口失败: {ex.Message}"; }
         }
@@ -305,21 +329,16 @@ namespace XiaoYu_LAM.UIAEngine
         /// <summary>
         /// 获取全屏截图（主显示器）
         /// </summary>
-        public ScanResult GetFullScreen()
+        [Description("截取整个电脑桌面的全屏画面。当你迷失方向，或者找不到特定窗口时使用。")]
+        public string GetFullScreen()
         {
             try
             {
-                // 使用 FlaUI 原生全屏截图
                 var originalImage = FlaUI.Core.Capturing.Capture.MainScreen().Bitmap;
-
-                return new ScanResult
-                {
-                    OriginalImage = originalImage,
-                    DrawnImage = new Bitmap(originalImage), // 全屏不需要画框，直接传原图
-                    ElementDescriptions = new Dictionary<int, string> { { 0, "全屏截图，无具体控件ID" } }
-                };
+                OnScanCompleted?.Invoke(originalImage, originalImage);
+                return "【执行结果: 全屏截图完毕】\n全屏截图已提供，请查看画面。";
             }
-            catch (Exception ex) { throw new Exception($"截取全屏失败: {ex.Message}"); }
+            catch (Exception ex) { return $"截取全屏失败: {ex.Message}"; }
         }
 
 
@@ -328,8 +347,10 @@ namespace XiaoYu_LAM.UIAEngine
         /// <summary>
         /// 扫描指定窗口的常规可交互控件
         /// </summary>
-        public ScanResult ScanWindow(IntPtr hWnd)
+        [Description("常规扫描窗口，获取带有编号红框的控件截图。必须提供纯数字句柄。")]
+        public string ScanWindow([Description("窗口的纯数字句柄")] long hWnd)
         {
+            IntPtr handle = new IntPtr(hWnd);
             var cf = _automation.ConditionFactory;
             var typeCondition = new OrCondition(
                 cf.ByControlType(ControlType.Button),
@@ -345,33 +366,34 @@ namespace XiaoYu_LAM.UIAEngine
                 cf.ByControlType(ControlType.RadioButton)
             );
 
-            return ScanInternal(hWnd, typeCondition, false);
+            return ScanInternal(handle, typeCondition, false, "窗口常规控件");
         }
 
         /// <summary>
         /// 单独扫描指定窗口的 Image 控件 (降低常规扫描的信息密度)
         /// </summary>
-        public ScanResult ScanImageControls(IntPtr hWnd)
+        [Description("单独扫描纯图片控件。当常规扫描漏掉了某些看起来像按钮的图标时使用。")]
+        public string ScanImageControls([Description("窗口的纯数字句柄")] long hWnd)
         {
+            IntPtr handle = new IntPtr(hWnd);
             var cf = _automation.ConditionFactory;
-            var typeCondition = cf.ByControlType(ControlType.Image);
-
-            return ScanInternal(hWnd, typeCondition, true);
+            return ScanInternal(handle, cf.ByControlType(ControlType.Image), true, "窗口图片控件");
         }
 
-        private ScanResult ScanInternal(IntPtr hWnd, ConditionBase condition, bool isImageOnly)
+
+        private string ScanInternal(IntPtr hWnd, ConditionBase condition, bool isImageOnly, string scanType)
         {
             _lastScanElements.Clear();
             var targetWindow = _automation.FromHandle(hWnd);
-            if (targetWindow == null) throw new Exception("无法获取窗口 UIA 节点");
+            if (targetWindow == null) return "错误：无法获取窗口 UIA 节点，可能句柄已失效。";
 
-            // 1. 获取原始截图 (原图)
             Bitmap originalBmp = CaptureWindowByHandle(hWnd);
             if (originalBmp == null) originalBmp = new Bitmap(targetWindow.Capture());
-
-            // 2. 创建绘制图副本
             Bitmap drawnBmp = new Bitmap(originalBmp);
-            var descriptions = new Dictionary<int, string>();
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"【执行结果: {scanType}扫描完毕】");
+            sb.AppendLine("已提供包含编号的标记图。以下是识别到的控件信息：");
 
             using (Graphics g = Graphics.FromImage(drawnBmp))
             {
@@ -381,101 +403,70 @@ namespace XiaoYu_LAM.UIAEngine
                 SolidBrush bgBrush = new SolidBrush(Color.Blue);
 
                 var rawElements = targetWindow.FindAll(TreeScope.Descendants, condition);
-
-                // 去重过滤
                 var optimizedElements = OptimizeElements(rawElements, isImageOnly);
 
-                var winRect = targetWindow.BoundingRectangle;
                 int index = 1;
+                var winRect = targetWindow.BoundingRectangle;
 
                 foreach (var elData in optimizedElements)
                 {
                     var rect = elData.Rect;
-                    int relativeX = (int)(rect.Left - winRect.Left);
-                    int relativeY = (int)(rect.Top - winRect.Top);
+                    int relativeX = Math.Max(0, (int)(rect.Left - winRect.Left));
+                    int relativeY = Math.Max(0, (int)(rect.Top - winRect.Top));
 
-                    if (relativeX < 0) relativeX = 0;
-                    if (relativeY < 0) relativeY = 0;
-
-                    // 绘制
                     g.DrawRectangle(redPen, relativeX, relativeY, (int)rect.Width, (int)rect.Height);
                     string idText = index.ToString();
                     g.FillRectangle(bgBrush, relativeX, relativeY, idText.Length * 10 + 5, 14);
                     g.DrawString(idText, font, textBrush, relativeX, relativeY - 1);
 
-                    // 缓存记录
                     _lastScanElements[index] = elData.Element;
-
-                    // 提取名字供 LLM 参考
                     string controlName = elData.Element.Properties.Name.ValueOrDefault;
                     if (string.IsNullOrWhiteSpace(controlName)) controlName = "<无名>";
-                    descriptions[index] = $"[{elData.Type}] {controlName}";
 
+                    sb.AppendLine($"ID: {index} ->[{elData.Type}] {controlName}");
                     index++;
                 }
             }
 
-            return new ScanResult
-            {
-                OriginalImage = originalBmp,
-                DrawnImage = drawnBmp,
-                ElementDescriptions = descriptions
-            };
+            // 触发事件将图片发送给 MSAF 拦截器和 UI 界面
+            OnScanCompleted?.Invoke(drawnBmp, originalBmp);
+
+            return sb.ToString();
         }
 
         /// <summary>
         /// 单独扫描容器控件（列表、表格、树），用于寻找大区块以便滚动
         /// </summary>
-        public ScanResult ScanContainerControls(IntPtr hWnd)
+        public string ScanContainerControls([Description("窗口的纯数字句柄")] long hWnd)
         {
+            IntPtr handle = new IntPtr(hWnd);
             var cf = _automation.ConditionFactory;
             var typeCondition = new OrCondition(
-                cf.ByControlType(ControlType.List),
-                cf.ByControlType(ControlType.Pane),
-                cf.ByControlType(ControlType.DataGrid),
-                cf.ByControlType(ControlType.Tree),
-                cf.ByControlType(ControlType.Table),
-                cf.ByControlType(ControlType.Group)
+                cf.ByControlType(ControlType.List), cf.ByControlType(ControlType.Pane),
+                cf.ByControlType(ControlType.DataGrid), cf.ByControlType(ControlType.Tree),
+                cf.ByControlType(ControlType.Table), cf.ByControlType(ControlType.Group)
             );
-            return ScanInternal(hWnd, typeCondition, true); // 复用 isImageOnly=true，跳过可点击验证
+            return ScanInternal(handle, typeCondition, true, "容器控件");
         }
 
         #endregion
 
         #region LLM 核心接口：交互 (Interact)
 
-        /// <summary>
-        /// 接口 1：执行代码级交互 (Invoke, Toggle 等)。不抢物理鼠标。
-        /// </summary>
-        public string PerformAction(int elementId)
+        [Description("后台代码级交互（优先使用，用于左键点击、选中、展开，速度快不抢鼠标）。")]
+        public string PerformAction([Description("要操作的控件纯数字ID")] int id)
         {
-            if (!_lastScanElements.TryGetValue(elementId, out var element))
-                return $"错误：未找到 ID 为 {elementId} 的控件，请重新扫描。";
-
+            if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID 为 {id} 的控件，请重新扫描。";
             try
             {
-                if (element.Patterns.Invoke.IsSupported)
-                {
-                    element.Patterns.Invoke.Pattern.Invoke();
-                    return "Invoke (标准点击) 成功";
-                }
-                if (element.Patterns.Toggle.IsSupported)
-                {
-                    element.Patterns.Toggle.Pattern.Toggle();
-                    return "Toggle (切换) 成功";
-                }
-                if (element.Patterns.SelectionItem.IsSupported)
-                {
-                    element.Patterns.SelectionItem.Pattern.Select();
-                    return "Select (选中) 成功";
-                }
+                if (element.Patterns.Invoke.IsSupported) { element.Patterns.Invoke.Pattern.Invoke(); return "Invoke (标准点击) 成功"; }
+                if (element.Patterns.Toggle.IsSupported) { element.Patterns.Toggle.Pattern.Toggle(); return "Toggle (切换) 成功"; }
+                if (element.Patterns.SelectionItem.IsSupported) { element.Patterns.SelectionItem.Pattern.Select(); return "Select (选中) 成功"; }
                 if (element.Patterns.ExpandCollapse.IsSupported)
                 {
                     var state = element.Patterns.ExpandCollapse.Pattern.ExpandCollapseState.Value;
-                    if (state == ExpandCollapseState.Expanded)
-                        element.Patterns.ExpandCollapse.Pattern.Collapse();
-                    else
-                        element.Patterns.ExpandCollapse.Pattern.Expand();
+                    if (state == ExpandCollapseState.Expanded) element.Patterns.ExpandCollapse.Pattern.Collapse();
+                    else element.Patterns.ExpandCollapse.Pattern.Expand();
                     return "Expand/Collapse 成功";
                 }
                 if (element.Patterns.LegacyIAccessible.IsSupported)
@@ -488,33 +479,22 @@ namespace XiaoYu_LAM.UIAEngine
                         return $"LegacyIAccessible (执行动作: '{defaultAction}') 成功";
                     }
                 }
-
-                return "该控件不支持代码级交互，建议使用 PerformMouseClick。";
+                return "该控件不支持代码级交互，建议使用 MouseClick。";
             }
-            catch (Exception ex)
-            {
-                return $"交互抛出异常: {ex.Message}";
-            }
+            catch (Exception ex) { return $"交互抛出异常: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 物理鼠标左键双击
-        /// </summary>
-        public string DoubleClick(int elementId)
+        [Description("前台物理鼠标左键双击。打开文件夹、打开文件时，通常需要双击！")]
+        public string DoubleClick([Description("要操作的控件纯数字ID")] int id)
         {
-            if (!_lastScanElements.TryGetValue(elementId, out var element)) return $"错误：未找到 ID {elementId}。";
+            if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
             try
             {
                 if (element.TryGetClickablePoint(out var point))
                 {
                     IntPtr hwnd = GetHwndFromElement(element);
-                    if (hwnd != IntPtr.Zero)
-                    {
-                        SetForegroundWindow(hwnd);
-                        System.Threading.Thread.Sleep(100);
-                    }
-
-                    FlaUI.Core.Input.Mouse.DoubleClick(point); // FlaUI 原生双击
+                    if (hwnd != IntPtr.Zero) { SetForegroundWindow(hwnd); System.Threading.Thread.Sleep(100); }
+                    FlaUI.Core.Input.Mouse.DoubleClick(point);
                     return "真实鼠标双击发送成功。";
                 }
                 return "错误：无法获取可点击坐标。";
@@ -522,70 +502,44 @@ namespace XiaoYu_LAM.UIAEngine
             catch (Exception ex) { return $"双击异常: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 接口 2：物理鼠标真实点击 (单桌面终极兜底方案)
-        /// 会将窗口前置，并移动真实鼠标点击坐标点。
-        /// </summary>
-        public string PerformMouseClick(int elementId)
+        [Description("前台物理鼠标左键点击（备用方案：当 PerformAction 反馈执行成功但界面没反应时使用）。")]
+        public string PerformMouseClick([Description("要操作的控件纯数字ID")] int id)
         {
-            if (!_lastScanElements.TryGetValue(elementId, out var element))
-                return $"错误：未找到 ID 为 {elementId} 的控件。";
-
+            if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
             try
             {
                 if (element.TryGetClickablePoint(out var point))
                 {
-                    // 尝试获取所属窗口句柄，并将其提至前台，防止被遮挡
                     IntPtr hwnd = GetHwndFromElement(element);
-                    if (hwnd != IntPtr.Zero)
-                    {
-                        SetForegroundWindow(hwnd);
-                        System.Threading.Thread.Sleep(100); // 等待窗口来到前台
-                    }
-
-                    // 调用 FlaUI 原生鼠标模拟物理点击
+                    if (hwnd != IntPtr.Zero) { SetForegroundWindow(hwnd); System.Threading.Thread.Sleep(100); }
                     FlaUI.Core.Input.Mouse.Click(point);
                     return "真实鼠标点击发送成功。";
                 }
-                else
-                {
-                    return "错误：该控件不可见或无法获取可点击坐标(ClickablePoint)。";
-                }
+                return "错误：该控件不可见或无法获取可点击坐标。";
             }
-            catch (Exception ex)
-            {
-                return $"物理点击抛出异常: {ex.Message}";
-            }
+            catch (Exception ex) { return $"物理点击异常: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 接口 4：运行指定路径的程序 (通过快捷方式路径或 exe 路径)
-        /// </summary>
-        public string RunProgram(string path)
+        [Description("启动指定路径的程序（通过快捷方式或exe绝对路径）。")]
+        public string RunProgram([Description("程序的完整路径")] string path)
         {
             try
             {
-                // 使用 Windows 默认外壳启动程序
                 System.Diagnostics.ProcessStartInfo psi = new System.Diagnostics.ProcessStartInfo
                 {
                     FileName = path,
                     UseShellExecute = true
                 };
                 System.Diagnostics.Process.Start(psi);
-                return $"成功发送启动指令，路径：{path}。请使用 <GetWindows /> 检查程序是否已出现。";
+                return $"成功发送启动指令，路径：{path}。请使用 GetWindows 检查程序是否已出现。";
             }
-            catch (Exception ex)
-            {
-                return $"启动程序失败: {ex.Message}";
-            }
+            catch (Exception ex) { return $"启动程序失败: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 后台静默赋值 (适合原生控件，不抢焦点)
-        /// </summary>
-        public string SetValue(int elementId, string text)
+        [Description("后台代码级写入文本（优先尝试的文本输入方式，瞬间完成）。")]
+        public string SetValue([Description("要输入文本的控件ID")] int id, [Description("要输入的文字")] string text)
         {
-            if (!_lastScanElements.TryGetValue(elementId, out var element)) return $"错误：未找到 ID {elementId}。";
+            if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
             try
             {
                 if (element.Patterns.Value.IsSupported && !element.Patterns.Value.Pattern.IsReadOnly.Value)
@@ -593,42 +547,37 @@ namespace XiaoYu_LAM.UIAEngine
                     element.Patterns.Value.Pattern.SetValue(text);
                     return "SetValue (后台代码赋值) 成功。";
                 }
-                return "该控件不支持 ValuePattern 后台赋值，请尝试使用 <TypeText />。";
+                return "该控件不支持 ValuePattern 后台赋值，请尝试使用 TypeText。";
             }
             catch (Exception ex) { return $"SetValue 异常: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 前台物理输入 (点击聚焦 + 键盘打字，通杀 CEF)
-        /// </summary>
-        public string TypeText(int elementId, string text)
+        [Description("前台物理模拟打字（当 SetValue 失败或不支持时使用，会先强制点击聚焦再敲击）。")]
+        public string TypeText([Description("要输入文本的控件ID")] int id, [Description("要输入的文字")] string text)
         {
-            if (!_lastScanElements.TryGetValue(elementId, out var element)) return $"错误：未找到 ID {elementId}。";
+            if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
             try
             {
-                string clickRes = PerformMouseClick(elementId);
+                string clickRes = PerformMouseClick(id);
                 if (clickRes.Contains("错误")) return $"TypeText 失败，无法聚焦: {clickRes}";
 
-                System.Threading.Thread.Sleep(100); // 等待光标闪烁
+                System.Threading.Thread.Sleep(100);
                 FlaUI.Core.Input.Keyboard.Type(text);
                 return "TypeText (物理点击 + 键盘模拟) 输入成功。";
             }
             catch (Exception ex) { return $"TypeText 异常: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 物理鼠标右键点击
-        /// </summary>
-        public string RightClick(int elementId)
+        [Description("物理鼠标右键点击（用于呼出右键菜单）。")]
+        public string RightClick([Description("要操作的控件纯数字ID")] int id)
         {
-            if (!_lastScanElements.TryGetValue(elementId, out var element)) return $"错误：未找到 ID {elementId}。";
+            if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
             try
             {
                 if (element.TryGetClickablePoint(out var point))
                 {
                     IntPtr hwnd = GetHwndFromElement(element);
-                    if (hwnd != IntPtr.Zero) SetForegroundWindow(hwnd);
-
+                    if (hwnd != IntPtr.Zero) { SetForegroundWindow(hwnd); System.Threading.Thread.Sleep(100); }
                     FlaUI.Core.Input.Mouse.RightClick(point);
                     return "真实鼠标右键点击成功。";
                 }
@@ -637,51 +586,41 @@ namespace XiaoYu_LAM.UIAEngine
             catch (Exception ex) { return $"右键点击异常: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 对指定容器进行物理滚轮滚动
-        /// </summary>
-        public string Scroll(int elementId, string direction)
+        [Description("对指定的容器区块进行物理滚轮翻页。必须提供 direction 参数。")]
+        public string Scroll([Description("要滚动的容器控件ID")] int id, [Description("滚动方向，只能为 'down' 或 'up'")] string direction)
         {
-            if (!_lastScanElements.TryGetValue(elementId, out var element)) return $"错误：未找到 ID {elementId}。";
+            if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
             try
             {
                 var rect = element.BoundingRectangle;
                 if (rect.IsEmpty) return "错误：控件没有有效的边界。";
 
-                // 计算中心点
                 int centerX = (int)(rect.Left + rect.Width / 2);
                 int centerY = (int)(rect.Top + rect.Height / 2);
-
-                // 尝试设为焦点
                 try { element.Focus(); } catch { }
 
-                // 物理移动鼠标到容器中心
                 FlaUI.Core.Input.Mouse.Position = new System.Drawing.Point(centerX, centerY);
-                System.Threading.Thread.Sleep(50); // 给系统一点反应时间
+                System.Threading.Thread.Sleep(50);
 
-                // 物理滚动：负数向下，正数向上
-                double scrollAmount = direction.ToLower() == "down" ? -3.0 : 3.0; // FlaUI 的 scroll 量，通常 1 = 120 增量
+                double scrollAmount = direction.ToLower() == "down" ? -3.0 : 3.0;
                 FlaUI.Core.Input.Mouse.Scroll(scrollAmount);
 
-                return $"已在目标区域中心点 ({centerX},{centerY}) 向 {direction} 物理滚动。请使用 <ScanWindow /> 重新检查。";
+                return $"已在目标区域中心点 ({centerX},{centerY}) 向 {direction} 物理滚动。请重新扫描检查。";
             }
             catch (Exception ex) { return $"滚动异常: {ex.Message}"; }
         }
 
-        /// <summary>
-        /// 模拟按下常用键盘按键
-        /// </summary>
-        public string PressKey(string keyName)
+        [Description("模拟按下键盘按键。支持: Enter, Esc, Tab, Space, Back, Delete 等。")]
+        public string PressKey([Description("按键名称")] string keyName)
         {
             try
             {
-                // 将字符串映射到 FlaUI 的 VirtualKeyShort 枚举
                 if (Enum.TryParse(keyName, true, out FlaUI.Core.WindowsAPI.VirtualKeyShort vKey))
                 {
                     FlaUI.Core.Input.Keyboard.Press(vKey);
                     return $"已成功按下按键: {keyName}";
                 }
-                return $"错误：不支持的按键名称 '{keyName}'。常见支持：Enter, Esc, Tab, Space, Back, Delete, Up, Down, Left, Right。";
+                return $"错误：不支持的按键名称 '{keyName}'。常见支持：Enter, Esc, Tab, Space, Back, Delete";
             }
             catch (Exception ex) { return $"按键异常: {ex.Message}"; }
         }

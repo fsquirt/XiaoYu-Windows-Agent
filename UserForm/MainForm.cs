@@ -103,20 +103,40 @@ namespace XiaoYu_LAM
             LogrichTextBox1.ScrollToCaret(); // 滚动到最下面
         }
 
-        public void UpdateVisionImage_bak(Bitmap bmp)
+        /// <summary>
+        /// 在对话流中插入带有红框的截图
+        /// </summary>
+        public void AppendImageToLog(string role, Bitmap bmp)
         {
             if (this.InvokeRequired)
             {
-                this.Invoke(new Action(() => UpdateVisionImage(bmp)));
+                this.Invoke(new Action(() => AppendImageToLog(role, bmp)));
                 return;
             }
 
-            if (pictureBox1.Image != null)
+            string time = DateTime.Now.ToString("HH:mm:ss");
+            LogrichTextBox1.SelectionStart = LogrichTextBox1.TextLength;
+            LogrichTextBox1.SelectionColor = Color.Gray;
+            LogrichTextBox1.AppendText($"[{time}] <{role}> 获取了最新界面截图：\n");
+
+            try
             {
-                pictureBox1.Image.Dispose();
+                // 暂存用户剪贴板
+                IDataObject oldData = Clipboard.GetDataObject();
+                // 写入图片并粘贴
+                Clipboard.SetImage(bmp);
+                LogrichTextBox1.SelectionStart = LogrichTextBox1.TextLength;
+                LogrichTextBox1.Paste();
+                // 恢复剪贴板
+                if (oldData != null) Clipboard.SetDataObject(oldData);
             }
-            // 克隆一份防止跨线程占用冲突
-            pictureBox1.Image = new Bitmap(bmp);
+            catch (Exception ex)
+            {
+                LogrichTextBox1.AppendText($"[图片显示失败: {ex.Message}]\n");
+            }
+
+            LogrichTextBox1.AppendText("\n\n");
+            LogrichTextBox1.ScrollToCaret();
         }
 
         public void UpdateVisionImage(Bitmap bmp)
