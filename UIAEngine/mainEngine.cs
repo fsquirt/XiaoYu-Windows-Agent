@@ -52,6 +52,9 @@ namespace XiaoYu_LAM.UIAEngine
 
         public void Dispose()
         {
+            _lastScanElements.Clear();
+            _lastScanElements = null;
+
             _automation?.Dispose();
         }
 

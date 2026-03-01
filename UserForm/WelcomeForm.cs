@@ -189,5 +189,10 @@ namespace XiaoYu_LAM
                 scanWindow.Show();
             }
         }
+
+        private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
+        {
+            MessageBox.Show("这是好事啊，但是我手头没有带NPU的电脑，所以还没有适配");
+        }
     }
 }
