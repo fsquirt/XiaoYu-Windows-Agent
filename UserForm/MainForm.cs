@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using Windows.Foundation.Metadata;
 using XiaoYu_LAM.ToolForm;
 
 namespace XiaoYu_LAM
@@ -172,11 +173,20 @@ namespace XiaoYu_LAM
         private void 新建任务ToolStripMenuItem_Click(object sender, EventArgs e)
         {
             ChatForm chatForm = new ChatForm(this);
-            chatForm.Show();
+            chatForm.ShowDialog();
+
+            chatForm = null;
+            GC.WaitForFullGCApproach();
+            GC.Collect();
         }
 
         [System.Runtime.InteropServices.DllImport("shell32.dll", CharSet = System.Runtime.InteropServices.CharSet.Unicode)]
         private static extern int ShellAbout(IntPtr hWnd, string szApp, string szOtherStuff, IntPtr hIcon);
 
+        private void button5_Click(object sender, EventArgs e)
+        {
+            GC.Collect();
+            
+        }
     }
 }

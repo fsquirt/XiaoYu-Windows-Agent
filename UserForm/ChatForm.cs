@@ -110,7 +110,8 @@ namespace XiaoYu_LAM
             ConversationRichTextBox.Clear();
             ConversationRichTextBox.Dispose();
 
-            // 强制 GC，特别是针对 LOH
+
+            // 强制 GC
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
@@ -130,6 +131,8 @@ namespace XiaoYu_LAM
 
             // 执行写入操作
             WriteTextToBox(textToPrint, true);
+
+            textToPrint = null; // 释放字符串引用，帮助 GC 回收
         }
 
         private void WriteTextToBox(string text, bool isAiContent, string role = null)
@@ -153,6 +156,7 @@ namespace XiaoYu_LAM
                         ConversationRichTextBox.SelectionColor = Color.Blue;
                         ConversationRichTextBox.SelectedText = $"\n\n[{time}] <AI>: "; // 补一个换行区分上一条
                         _isAiTyping = true;
+                        time = null;
                     }
                     ConversationRichTextBox.SelectionColor = Color.Blue;
                 }
@@ -205,6 +209,8 @@ namespace XiaoYu_LAM
                 WriteTextToBox(pendingText, true);
             }
 
+            pendingText = null;
+
             // 写入本次的 Log 信息（视为 System/Tool 的发言，isAiContent=false）
             // 格式化 Log 文本
             string time = DateTime.Now.ToString("HH:mm:ss");
@@ -217,6 +223,9 @@ namespace XiaoYu_LAM
             }
 
             WriteTextToBox(logText, false, role);
+
+            time = null;
+            logText = null;
         }
 
         private void AppendStreamText(string text)
@@ -246,8 +255,9 @@ namespace XiaoYu_LAM
             ConversationRichTextBox.SelectionColor = Color.Gray;
             ConversationRichTextBox.AppendText($"[{time}] <System> 截取了界面：\n");
 
+            time = null ;
+
             // 在贴入 RichTextBox 之前，缩小图片
-            // 这不仅能解决 OLE 容器导致的几兆内存锁定，还能解决聊天窗口滚动卡顿的问题
             int maxWidth = 400; // 缩略图最大宽度
             int newWidth = bmp.Width > maxWidth ? maxWidth : bmp.Width;
             int newHeight = (int)(bmp.Height * ((float)newWidth / bmp.Width));
@@ -283,6 +293,7 @@ namespace XiaoYu_LAM
             bool isHideUIA = false;
             var chk = _mainForm.Controls.Find("IsHideUIAoutInChatForm", true).FirstOrDefault() as CheckBox;
             if (chk != null) isHideUIA = chk.Checked;
+            chk = null;
 
             if (!isHideUIA)
             {
@@ -313,6 +324,9 @@ namespace XiaoYu_LAM
             {
                 comboBox1.Items.Add(Path.GetFileName(f));
             }
+
+            files = null;
+            sortedFiles = null;
         }
 
         // 下拉框选择历史会话
@@ -343,6 +357,10 @@ namespace XiaoYu_LAM
                     }
 
                     AppendLog("System", $"成功恢复会话: {_currentFileName}");
+
+                    filePath = null;
+                    fileText = null;
+                    match = null;
                 }
                 catch (Exception ex)
                 {
@@ -378,6 +396,9 @@ namespace XiaoYu_LAM
                     string title = safeInput.Length > 15 ? safeInput.Substring(0, 15) : safeInput;
 
                     _currentFileName = $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.md";
+
+                    safeInput = null;
+                    title = null ;
                 }
 
                 var updates = _msafEngine.XiaoYuAgent.RunStreamingAsync(userInput, _currentSession, cancellationToken: _cts.Token);
@@ -411,12 +432,19 @@ namespace XiaoYu_LAM
                                 if (!isHideUIA) AppendLog("ToolResult", $"[{currentToolCall}] 结果: \n{functionResult.Result}");
                             }
                         }
+
+                        update = null;
                     }
                 }
                 finally
                 {
                     if (enumerator != null) await enumerator.DisposeAsync();
                     if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
+                    updates = null;
+                    currentToolCall =  null;
+                    enumerator = null;
+                    chk = null;
+
                 }
 
                 // 后台静默保存，不刷新 ComboBox，防止触发事件清空屏幕
@@ -424,15 +452,18 @@ namespace XiaoYu_LAM
                 {
                     string filePath = Path.Combine(_sessionDirectory, _currentFileName);
                     await _msafEngine.BackupSessionToMarkdown(_currentSession, filePath, ConversationRichTextBox.Text);
+                    filePath = null;
                 }
             }
             catch (TaskCanceledException)
             {
                 AppendLog("System", "任务已被手动终止。");
+
             }
             catch (Exception ex)
             {
                 AppendLog("Error", ex.Message);
+
             }
             finally
             {
@@ -442,6 +473,9 @@ namespace XiaoYu_LAM
                 toolStripLabel1.Text = "任务执行完毕";
                 _cts?.Dispose();
                 _cts = null;
+
+                userInput = null;
+                
             }
         }
 
