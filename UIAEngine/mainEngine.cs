@@ -156,8 +156,19 @@ namespace XiaoYu_LAM.UIAEngine
                 AIFunctionFactory.Create(new Func<int, string, string>(this.SetValue), name: "SetValue"),
                 AIFunctionFactory.Create(new Func<int, string, string>(this.TypeText), name: "TypeText"),
                 AIFunctionFactory.Create(new Func<string, string>(this.PressKey), name: "PressKey"),
-                AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll")
+                AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll"),
+                AIFunctionFactory.Create(new Func<long, string>(this.BringWindowToFront), name: "BringWindowToFront")
             };
+        }
+
+        [Description("将指定窗口移动到屏幕最前端并激活。如果你怀疑窗口被遮挡导致扫描不全，请调用此工具。")]
+        public string BringWindowToFront([Description("窗口的纯数字句柄")] long hWnd)
+        {
+            IntPtr handle = new IntPtr(hWnd);
+            if (handle == IntPtr.Zero) return "错误：无效的句柄。";
+
+            SetForegroundWindow(handle);
+            return "已尝试将窗口移动到最前端。";
         }
 
         [Description("获取桌面所有快捷方式。返回桌面上所有的快捷方式名称和路径。如果目标软件没打开，用这个找路径。")]
@@ -349,7 +360,6 @@ namespace XiaoYu_LAM.UIAEngine
         [Description("常规扫描窗口，获取带有编号红框的控件截图。必须提供纯数字句柄。")]
         public string ScanWindow([Description("窗口的纯数字句柄")] long hWnd)
         {
-            Thread.Sleep(2000); // 暂停两秒等待加载完毕
             IntPtr handle = new IntPtr(hWnd);
             var cf = _automation.ConditionFactory;
             var typeCondition = new OrCondition(
@@ -381,54 +391,65 @@ namespace XiaoYu_LAM.UIAEngine
         private string ScanInternal(IntPtr hWnd, ConditionBase condition, bool isImageOnly, string scanType)
         {
             _lastScanElements.Clear();
-            var targetWindow = _automation.FromHandle(hWnd);
-            if (targetWindow == null) return "错误：无法获取窗口 UIA 节点，可能句柄已失效。";
-
-            Bitmap originalBmp = CaptureWindowByHandle(hWnd);
-            if (originalBmp == null) originalBmp = new Bitmap(targetWindow.Capture());
-            Bitmap drawnBmp = new Bitmap(originalBmp);
-
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"【执行结果: {scanType}扫描完毕】");
-            sb.AppendLine("已提供包含编号的标记图。以下是识别到的控件信息：");
-
-            using (Graphics g = Graphics.FromImage(drawnBmp))
+            try
             {
-                Pen redPen = new Pen(Color.Red, 2);
-                Font font = new Font("Arial", 9, FontStyle.Bold);
-                SolidBrush textBrush = new SolidBrush(Color.White);
-                SolidBrush bgBrush = new SolidBrush(Color.Blue);
+                var targetWindow = _automation.FromHandle(hWnd);
+                if (targetWindow == null) return "错误：无法获取窗口 UIA 节点，可能句柄已失效。";
 
-                var rawElements = targetWindow.FindAll(TreeScope.Descendants, condition);
-                var optimizedElements = OptimizeElements(rawElements, isImageOnly);
+                // 自动将窗口移动到最前端 
+                SetForegroundWindow(hWnd);
+                System.Threading.Thread.Sleep(1000); // 给桌面一点渲染时间
 
-                int index = 1;
-                var winRect = targetWindow.BoundingRectangle;
+                Bitmap originalBmp = CaptureWindowByHandle(hWnd);
+                if (originalBmp == null) originalBmp = new Bitmap(targetWindow.Capture());
+                Bitmap drawnBmp = new Bitmap(originalBmp);
 
-                foreach (var elData in optimizedElements)
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine($"【执行结果: {scanType}扫描完毕】");
+                sb.AppendLine("已提供包含编号的标记图。以下是识别到的控件信息：");
+
+                using (Graphics g = Graphics.FromImage(drawnBmp))
                 {
-                    var rect = elData.Rect;
-                    int relativeX = Math.Max(0, (int)(rect.Left - winRect.Left));
-                    int relativeY = Math.Max(0, (int)(rect.Top - winRect.Top));
+                    Pen redPen = new Pen(Color.Red, 2);
+                    Font font = new Font("Arial", 9, FontStyle.Bold);
+                    SolidBrush textBrush = new SolidBrush(Color.White);
+                    SolidBrush bgBrush = new SolidBrush(Color.Blue);
 
-                    g.DrawRectangle(redPen, relativeX, relativeY, (int)rect.Width, (int)rect.Height);
-                    string idText = index.ToString();
-                    g.FillRectangle(bgBrush, relativeX, relativeY, idText.Length * 10 + 5, 14);
-                    g.DrawString(idText, font, textBrush, relativeX, relativeY - 1);
+                    var rawElements = targetWindow.FindAll(TreeScope.Descendants, condition);
 
-                    _lastScanElements[index] = elData.Element;
-                    string controlName = elData.Element.Properties.Name.ValueOrDefault;
-                    if (string.IsNullOrWhiteSpace(controlName)) controlName = "<无名>";
+                    // 传入 scanType，以便进行不同的过滤逻辑
+                    var optimizedElements = OptimizeElements(rawElements, isImageOnly, scanType);
 
-                    sb.AppendLine($"ID: {index} ->[{elData.Type}] {controlName}");
-                    index++;
+                    int index = 1;
+                    var winRect = targetWindow.BoundingRectangle;
+
+                    foreach (var elData in optimizedElements)
+                    {
+                        var rect = elData.Rect;
+                        int relativeX = Math.Max(0, (int)(rect.Left - winRect.Left));
+                        int relativeY = Math.Max(0, (int)(rect.Top - winRect.Top));
+
+                        g.DrawRectangle(redPen, relativeX, relativeY, (int)rect.Width, (int)rect.Height);
+                        string idText = index.ToString();
+                        g.FillRectangle(bgBrush, relativeX, relativeY, idText.Length * 10 + 5, 14);
+                        g.DrawString(idText, font, textBrush, relativeX, relativeY - 1);
+
+                        _lastScanElements[index] = elData.Element;
+                        string controlName = elData.Element.Properties.Name.ValueOrDefault;
+                        if (string.IsNullOrWhiteSpace(controlName)) controlName = "<无名>";
+
+                        sb.AppendLine($"ID: {index} ->[{elData.Type}] {controlName}");
+                        index++;
+                    }
                 }
+
+                OnScanCompleted?.Invoke(drawnBmp, originalBmp);
+                return sb.ToString();
             }
-
-            // 触发事件将图片发送给 MSAF 拦截器和 UI 界面
-            OnScanCompleted?.Invoke(drawnBmp, originalBmp);
-
-            return sb.ToString();
+            catch
+            {
+                return "错误：无法获取窗口 UIA 节点，可能句柄已失效。";
+            }
         }
 
 
@@ -548,18 +569,32 @@ namespace XiaoYu_LAM.UIAEngine
             catch (Exception ex) { return $"SetValue 异常: {ex.Message}"; }
         }
 
-        [Description("前台物理模拟打字（当 SetValue 失败或不支持时使用，会先强制点击聚焦再敲击）。")]
+        [Description("前台物理模拟打字（当 SetValue 失败或不支持时使用，会先强制点击聚焦，全选删除旧内容，再敲击新内容）。")]
         public string TypeText([Description("要输入文本的控件ID")] int id, [Description("要输入的文字")] string text)
         {
             if (!_lastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
             try
             {
+                // 点击聚焦
                 string clickRes = PerformMouseClick(id);
                 if (clickRes.Contains("错误")) return $"TypeText 失败，无法聚焦: {clickRes}";
 
-                System.Threading.Thread.Sleep(100);
+                System.Threading.Thread.Sleep(200); 
+
+                // Pressing 会按下按键，using 结束时会自动释放按键
+                using (FlaUI.Core.Input.Keyboard.Pressing(FlaUI.Core.WindowsAPI.VirtualKeyShort.CONTROL))
+                {
+                    FlaUI.Core.Input.Keyboard.Type(FlaUI.Core.WindowsAPI.VirtualKeyShort.KEY_A);
+                }
+
+                System.Threading.Thread.Sleep(100); // 等待选中
+
+                // 模拟 Backspace 删除内容
+                FlaUI.Core.Input.Keyboard.Type(FlaUI.Core.WindowsAPI.VirtualKeyShort.BACK);
+                System.Threading.Thread.Sleep(100); // 等待内容被清空
+
                 FlaUI.Core.Input.Keyboard.Type(text);
-                return "TypeText (物理点击 + 键盘模拟) 输入成功。";
+                return "TypeText (物理点击 + 全选删除 + 键盘模拟) 输入成功。";
             }
             catch (Exception ex) { return $"TypeText 异常: {ex.Message}"; }
         }
@@ -673,9 +708,10 @@ namespace XiaoYu_LAM.UIAEngine
             public bool ShouldDraw { get; set; } = true;
         }
 
-        private List<ElementData> OptimizeElements(AutomationElement[] elements, bool isImageOnly)
+        private List<ElementData> OptimizeElements(AutomationElement[] elements, bool isImageOnly, string scanType)
         {
             var list = new List<ElementData>();
+            bool isContainerScan = scanType == "容器控件";
 
             foreach (var el in elements)
             {
@@ -703,11 +739,20 @@ namespace XiaoYu_LAM.UIAEngine
                     }
                     catch { }
 
-                    // 如果是在非纯图片扫描模式下，丢弃不可点击的非交互元素
-                    if (!isImageOnly)
+                    // ====== 核心过滤逻辑 ======
+                    if (isContainerScan)
                     {
-                        if (!isClickable && (isContainer || type == ControlType.Image || type == ControlType.Text))
-                            continue;
+                        // 如果是专扫容器，只保留容器
+                        if (!isContainer) continue;
+                    }
+                    else if (isImageOnly)
+                    {
+                        // 如果是专扫图片，放行
+                    }
+                    else
+                    {
+                        if (!isClickable) continue; // 1. 不可点，直接丢
+                        if (isContainer) continue;  // 2. 是容器，直接丢
                     }
 
                     list.Add(new ElementData
@@ -722,7 +767,7 @@ namespace XiaoYu_LAM.UIAEngine
                 catch { continue; }
             }
 
-            // 几何去重
+            // 几何去重 (保留，用于处理大小极为相近的重叠按钮)
             var arr = list.ToArray();
             int count = arr.Length;
 
