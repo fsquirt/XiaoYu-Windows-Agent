@@ -108,17 +108,16 @@ namespace XiaoYu_LAM.AgentEngine
                         Instructions = sysPrompt,
                         Tools = uiEngine.GetTools() // 直接获取原生工具
                     }
-
                 });
             }
             else if(protocol == "Anthropic")
             {
-                AnthropicClient client = new AnthropicClient { ApiKey=apiKey,BaseUrl=apiUrl};
-                IChatClient chatClient = client.AsIChatClient(modelName)
-                    .AsBuilder()
-                    .UseFunctionInvocation()
-                    .Build();
-                XiaoYuAgent = chatClient.AsAIAgent(new ChatClientAgentOptions()
+                AnthropicClient rawClient = new AnthropicClient { ApiKey=apiKey,BaseUrl=apiUrl};
+
+                // 第二个雷霆BUG 原Anthropic协议Agnet缺少图片注入 并且原UseFunctionInvocation()底层拦截了工具调用
+                IChatClient meaiClient = new ImageInjectingChatClient(rawClient.AsIChatClient(modelName), this);
+
+                XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
                 {
                     Name = "晓予",
                     ChatOptions = new ChatOptions()
@@ -211,11 +210,28 @@ namespace XiaoYu_LAM.AgentEngine
                 _engine = engine;
             }
 
+            // 我操 第一个雷霆BUG修复 让LLM能正确接收到注入图片后的消息列表 原先LLM成瞎子了 纯靠读取控件文字勉强完成的操作 我操
+            public override Task<ChatResponse> GetResponseAsync(IEnumerable<ChatMessage> chatMessages, ChatOptions options = null, CancellationToken cancellationToken = default)
+            {
+                // 把原消息放进去加工，塞入图片
+                var newMessages = InjectImageIfNeeded((IList<ChatMessage>)chatMessages);
+                // 把带有图片的新消息发给底层真正的大模型
+                return base.GetResponseAsync(newMessages, options, cancellationToken);
+            }
+
+            public override IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(IEnumerable<ChatMessage> chatMessages, ChatOptions options = null, CancellationToken cancellationToken = default)
+            {
+                // 把原消息放进去加工，塞入图片
+                var newMessages = InjectImageIfNeeded((IList<ChatMessage>)chatMessages);
+                // 把带有图片的新消息发给底层真正的大模型
+                return base.GetStreamingResponseAsync(newMessages, options, cancellationToken);
+            }
+
             private IList<ChatMessage> InjectImageIfNeeded(IList<ChatMessage> messages)
             {
                 var msgList = messages.ToList();
 
-                // 【核心新增】：动态读取主界面的 IsDeleteHistoryPic 状态，实现 Token 瘦身
+                // 动态读取主界面的 IsDeleteHistoryPic 状态，实现 Token 瘦身
                 bool isDeleteHistory = false;
                 var mf = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
                 if (mf != null)
