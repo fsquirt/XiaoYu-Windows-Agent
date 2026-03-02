@@ -24,6 +24,8 @@ namespace XiaoYu_LAM
 
         public string PROTOCOL = "";
 
+
+
         private void MainForm_Load(object sender, EventArgs e)
         {
             // 从程序目录下的 config.ini 文件中读取配置
