@@ -18,5 +18,7 @@ namespace XiaoYu_LAM
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new WelcomeForm());
         }
+
+
     }
 }

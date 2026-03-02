@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Security.Principal;
 using System.Text;
@@ -18,11 +19,29 @@ namespace XiaoYu_LAM
 {
     public partial class WelcomeForm : Form
     {
+        public bool IsConfigValid = false;
 
         public int ClickLabel1Time = 0;
         public WelcomeForm()
         {
             InitializeComponent();
+        }
+
+        // 检查启动的时候是否带有 --task 参数，如果有自动开始LLM执行任务
+        public void CheckArgTask()
+        {
+            if (Environment.GetCommandLineArgs().Contains("--task"))
+            {
+                // 输出参数内容
+                string[] args = Environment.GetCommandLineArgs();
+                MessageBox.Show("自动执行LLM任务:" + args[2], "启动参数", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                // 直接启动主窗口并隐藏当前向导
+                var main = new MainForm();
+                main.FormClosed += (s, ev) => this.Close();
+                main.Show();
+                this.Hide();
+            }
         }
 
         private void WelcomeForm_Load(object sender, EventArgs e)
@@ -92,6 +111,8 @@ namespace XiaoYu_LAM
                     textBox1.Text = config["API_URL"];
                     textBox2.Text = config["API_KEY"];
                     textBox3.Text = config["MODEL_NAME"];
+
+                    IsConfigValid = true;
                 }
                 else
                 {
@@ -102,6 +123,12 @@ namespace XiaoYu_LAM
             {
                 toolStripStatusLabel1.Text = "就绪";
             }
+
+            if (IsConfigValid)
+            {
+                CheckArgTask(); //如果配置有效，检查是否带有任务参数，有的话直接执行任务
+            }
+                
         }
 
         private void label1_Click(object sender, EventArgs e)
