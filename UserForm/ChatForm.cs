@@ -63,9 +63,9 @@ namespace XiaoYu_LAM
 
             this.FormClosing += ChatForm_FormClosing; // 注册关闭事件
 
-            //初始化 UI 刷新定时器(100ms 刷新一次，即 10FPS，肉眼看着也很流畅)
+            //初始化 UI 刷新定时器
             _uiRefreshTimer = new System.Windows.Forms.Timer();
-            _uiRefreshTimer.Interval = 100;
+            _uiRefreshTimer.Interval = 500; //500ms 刷新一次
             _uiRefreshTimer.Tick += UiRefreshTimer_Tick;
             _uiRefreshTimer.Start();
         }

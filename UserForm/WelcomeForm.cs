@@ -1,4 +1,7 @@
-﻿using OpenAI;
+﻿using Anthropic;
+using Anthropic.Core;
+using Microsoft.Extensions.AI;
+using OpenAI;
 using OpenAI.Chat;
 using OpenAI.Moderations;
 using System;
@@ -112,6 +115,15 @@ namespace XiaoYu_LAM
                     textBox2.Text = config["API_KEY"];
                     textBox3.Text = config["MODEL_NAME"];
 
+                    if (config["PROTOCOL"] == "Anthropic") 
+                    {
+                        checkBox2.Checked = true;
+                    }
+                    else if (config["PROTOCOL"] == "OpenAI")
+                    {
+                        checkBox1.Checked = true;
+                    }
+
                     IsConfigValid = true;
                 }
                 else
@@ -128,7 +140,7 @@ namespace XiaoYu_LAM
             {
                 CheckArgTask(); //如果配置有效，检查是否带有任务参数，有的话直接执行任务
             }
-                
+
         }
 
         private void label1_Click(object sender, EventArgs e)
@@ -141,34 +153,77 @@ namespace XiaoYu_LAM
             }
         }
 
-        private void button2_Click(object sender, EventArgs e)
+        private async void button2_Click(object sender, EventArgs e)
         {
             try
             {
                 string API_URL = textBox1.Text;
                 string API_KEY = textBox2.Text;
                 string MODEL_NAME = textBox3.Text;
-                // 创建OPENAI客户端并尝试发送一句测试信息等待LLM回复，以验证API URL、API Key和模型名称的正确性
-                ChatClient client = new ChatClient(
-                    model: MODEL_NAME,
-                    credential: new ApiKeyCredential(API_KEY),
-                    options: new OpenAIClientOptions()
+
+                // 添加Anthropic支持
+                if (checkBox1.Checked)
+                {
+                    // 创建OPENAI客户端并尝试发送一句测试信息等待LLM回复，以验证API URL、API Key和模型名称的正确性
+                    ChatClient client = new ChatClient(
+                        model: MODEL_NAME,
+                        credential: new ApiKeyCredential(API_KEY),
+                        options: new OpenAIClientOptions()
+                        {
+                            Endpoint = new Uri(API_URL)
+                        });
+
+                    toolStripStatusLabel1.Text = "正在等待" + API_URL + "响应";
+
+                    ChatCompletion completion = client.CompleteChat("速速回我任意内容，我正在测试和你的聊天API是否正常");
+                    if(completion.Content[0].Text.Length > 15)
                     {
-                        Endpoint = new Uri(API_URL)
-                });
+                        toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + completion.Content[0].Text.Substring(0, 15).Replace('\n', '。') + "..."; //取15个够了多了会打乱ui
+                    }
+                    else
+                    {
+                        toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + completion.Content[0].Text.Replace('\n', '。') + "..."; //取15个够了多了会打乱ui
+                    }
+                    button2.Text = "验证通过";
 
-                toolStripStatusLabel1.Text = "正在等待" + API_URL + "响应";
+                    client = null;
+                    completion = null;
+                }
+                else if (checkBox2.Checked)
+                {
+                    AnthropicClient client = new AnthropicClient { ApiKey = API_KEY, BaseUrl = API_URL };
+                    IChatClient chatClient = client.AsIChatClient(MODEL_NAME)
+                        .AsBuilder()
+                        .UseFunctionInvocation()
+                        .Build();
+                    toolStripStatusLabel1.Text = "正在等待" + API_URL + "响应";
 
-                ChatCompletion completion = client.CompleteChat("速速回我任意内容，我正在测试和你的聊天API是否正常");
-                Console.WriteLine($"[ASSISTANT]: {completion.Content[0].Text}");
-                toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + completion.Content[0].Text.Substring(0,15).Replace('\n','。') + "..."; //取15个够了多了会打乱ui
-                button2.Text = "验证通过";
+                    var response = await chatClient.GetResponseAsync("速速回我任意内容，我正在测试和你的聊天API是否正常");
+                    if(response.Text.Length > 15)
+                    {
+                        toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + response.ToString().Substring(0, 15).Replace('\n', '。') + "..."; //取15个够了多了会打乱ui
+                    }
+                    else
+                    {
+                        toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + response.ToString().Replace('\n', '。') + "..."; 
+                    }
+                    
+                    button2.Text = "验证通过";
 
-                client = null;
+                    client = null;
+                    chatClient = null;
+                }
+                else
+                {
+                    toolStripStatusLabel1.Text = "请选择协议类型";
+                    button2.Text = "失败";
+                }
+
             }
             catch (Exception ex)
             {
                 MessageBox.Show("发生错误：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                button2.Text = "失败";
             }
 
         }
@@ -220,6 +275,23 @@ namespace XiaoYu_LAM
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)
         {
             MessageBox.Show("这是好事啊，但是我手头没有带NPU的电脑，所以还没有适配");
+        }
+
+        private void checkBox2_Click(object sender, EventArgs e)
+        {
+            if (checkBox1.Checked)
+            {
+                checkBox1.Checked = false;
+            }
+        }
+
+        private void checkBox1_Click(object sender, EventArgs e)
+        {
+            if (checkBox2.Checked)
+            {
+                checkBox2.Checked = false;
+            }
+
         }
     }
 }

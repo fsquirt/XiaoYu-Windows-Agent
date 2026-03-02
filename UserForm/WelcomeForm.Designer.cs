@@ -148,8 +148,6 @@
             // checkBox1
             // 
             this.checkBox1.AutoSize = true;
-            this.checkBox1.Checked = true;
-            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
             this.checkBox1.Font = new System.Drawing.Font("微软雅黑", 8.5F);
             this.checkBox1.Location = new System.Drawing.Point(76, 148);
             this.checkBox1.Name = "checkBox1";
@@ -157,6 +155,7 @@
             this.checkBox1.TabIndex = 10;
             this.checkBox1.Text = "OpenAI兼容";
             this.checkBox1.UseVisualStyleBackColor = true;
+            this.checkBox1.Click += new System.EventHandler(this.checkBox1_Click);
             // 
             // checkBox2
             // 
@@ -169,6 +168,7 @@
             this.checkBox2.TabIndex = 11;
             this.checkBox2.Text = "Anthropic兼容";
             this.checkBox2.UseVisualStyleBackColor = true;
+            this.checkBox2.Click += new System.EventHandler(this.checkBox2_Click);
             // 
             // label6
             // 

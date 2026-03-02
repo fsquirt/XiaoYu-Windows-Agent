@@ -15,6 +15,7 @@ using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using OpenAI;
 using OpenAI.Chat;
+using Anthropic;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using ChatRole = Microsoft.Extensions.AI.ChatRole;
 
@@ -24,14 +25,9 @@ namespace XiaoYu_LAM.AgentEngine
     internal class MSAFEngine
     {
         public AIAgent XiaoYuAgent { get; private set; }
-        private readonly UIAEngine.mainEngine _uiaEngine;
-
-        // 用于触发 UI 更新图片的事件
-        public event Action<Bitmap> OnImageCaptured;
 
         // 暂存由底层扫描触发的图片，等待 Middleware 注入给 LLM
         public Bitmap PendingImage { get; set; }
-
 
         public void CreateAgent(UIAEngine.mainEngine uiEngine)
         {
@@ -93,24 +89,45 @@ namespace XiaoYu_LAM.AgentEngine
                 throw new Exception("API 配置缺失，请先在主窗口配置并保存。");
             }
 
-            // 创建基础 OpenAI Client
-            OpenAIClientOptions options = new OpenAIClientOptions() { Endpoint = new Uri(apiUrl) };
-            OpenAI.Chat.ChatClient rawClient = new OpenAIClient(new ApiKeyCredential(apiKey), options).GetChatClient(modelName);
-
-            // 将其转为 MSAF 标准的 IChatClient，并挂载图片注入中间件
-            IChatClient meaiClient = new ImageInjectingChatClient(rawClient.AsIChatClient(), this);
-
-            // 构建 MSAF AIAgent，并把 uiEngine 里的工具全塞进去
-            XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
+            // 兼容 openai 和 anthropic
+            if(protocol == "OpenAI")
             {
-                Name = "晓予",
-                ChatOptions = new ChatOptions()
+                // 创建基础 OpenAI Client
+                OpenAIClientOptions options = new OpenAIClientOptions() { Endpoint = new Uri(apiUrl) };
+                OpenAI.Chat.ChatClient rawClient = new OpenAIClient(new ApiKeyCredential(apiKey), options).GetChatClient(modelName);
+
+                // 将其转为 MSAF 标准的 IChatClient，并挂载图片注入中间件
+                IChatClient meaiClient = new ImageInjectingChatClient(rawClient.AsIChatClient(), this);
+
+                // 构建 MSAF AIAgent，并把 uiEngine 里的工具全塞进去
+                XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
                 {
-                    Instructions = sysPrompt,
-                    Tools = uiEngine.GetTools() // 直接获取原生工具
-                }
-                
-            });
+                    Name = "晓予",
+                    ChatOptions = new ChatOptions()
+                    {
+                        Instructions = sysPrompt,
+                        Tools = uiEngine.GetTools() // 直接获取原生工具
+                    }
+
+                });
+            }
+            else if(protocol == "Anthropic")
+            {
+                AnthropicClient client = new AnthropicClient { ApiKey=apiKey,BaseUrl=apiUrl};
+                IChatClient chatClient = client.AsIChatClient(modelName)
+                    .AsBuilder()
+                    .UseFunctionInvocation()
+                    .Build();
+                XiaoYuAgent = chatClient.AsAIAgent(new ChatClientAgentOptions()
+                {
+                    Name = "晓予",
+                    ChatOptions = new ChatOptions()
+                    {
+                        Instructions = sysPrompt,
+                        Tools = uiEngine.GetTools() // 直接获取原生工具
+                    }
+                });
+            }
         }
 
         //中间件拦截对话流，将暂存的图片作为最新的视觉上下文注入给大模型
