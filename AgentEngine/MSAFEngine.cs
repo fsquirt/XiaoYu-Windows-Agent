@@ -1,4 +1,11 @@
-﻿using System;
+﻿using Anthropic;
+using Microsoft.Agents.AI;
+using Microsoft.Extensions.AI;
+using OpenAI;
+using OpenAI.Chat;
+using System;
+using System.ClientModel;
+using System.ClientModel.Primitives;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -6,16 +13,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.Json;
+using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.ClientModel;
-using Microsoft.Agents.AI;
-using Microsoft.Extensions.AI;
-using OpenAI;
-using OpenAI.Chat;
-using Anthropic;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
 using ChatRole = Microsoft.Extensions.AI.ChatRole;
 
@@ -94,6 +96,12 @@ namespace XiaoYu_LAM.AgentEngine
             {
                 // 创建基础 OpenAI Client
                 OpenAIClientOptions options = new OpenAIClientOptions() { Endpoint = new Uri(apiUrl) };
+
+                // 请求拦截器：注入 thinking: { type: enabled}
+                options.AddPolicy(new DoubaoDeepThinkingPolicy(), PipelinePosition.PerCall);
+                // 响应拦截器：拿下流数据，打印 reasoning_content
+                options.AddPolicy(new DoubaoReasoningResponsePolicy(), PipelinePosition.PerCall);
+
                 OpenAI.Chat.ChatClient rawClient = new OpenAIClient(new ApiKeyCredential(apiKey), options).GetChatClient(modelName);
 
                 // 将其转为 MSAF 标准的 IChatClient，并挂载图片注入中间件
@@ -197,6 +205,174 @@ namespace XiaoYu_LAM.AgentEngine
             {
                 JsonElement sessionElement = jsonDoc.RootElement.Clone();
                 return await XiaoYuAgent.DeserializeSessionAsync(sessionElement);
+            }
+        }
+
+        /// <summary>
+        /// 响应流拦截策略：用于替换原始响应流，以便偷窥数据
+        /// </summary>
+        internal class DoubaoReasoningResponsePolicy : PipelinePolicy
+        {
+            public override void Process(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+            {
+                ProcessNext(message, pipeline, currentIndex);
+                WrapStream(message);
+            }
+
+            public override async ValueTask ProcessAsync(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+            {
+                await ProcessNextAsync(message, pipeline, currentIndex).ConfigureAwait(false);
+                WrapStream(message);
+            }
+
+            private void WrapStream(PipelineMessage message)
+            {
+                // 只有成功的响应且是流式内容才拦截
+                if (message.Response != null && message.Response.ContentStream != null)
+                {
+                    // 用我们要监听的流替换原始流
+                    message.Response.ContentStream = new ReasoningSpyStream(message.Response.ContentStream);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 间谍流：在读取数据的同时，用正则提取 reasoning_content 并打印
+        /// </summary>
+        internal class ReasoningSpyStream : Stream
+        {
+            private readonly Stream _innerStream;
+            // 用于匹配 reasoning_content 的正则，匹配模式： "reasoning_content": "内容" 
+            private static readonly Regex _regex = new Regex("\"reasoning_content\"\\s*:\\s*\"((?:[^\"\\\\]|\\\\.)*)\"", RegexOptions.Compiled);
+
+            public ReasoningSpyStream(Stream inner)
+            {
+                _innerStream = inner;
+            }
+
+            public override bool CanRead => _innerStream.CanRead;
+            public override bool CanSeek => _innerStream.CanSeek;
+            public override bool CanWrite => _innerStream.CanWrite;
+            public override long Length => _innerStream.Length;
+            public override long Position { get => _innerStream.Position; set => _innerStream.Position = value; }
+
+            public override void Flush() => _innerStream.Flush();
+
+            public override int Read(byte[] buffer, int offset, int count)
+            {
+                int bytesRead = _innerStream.Read(buffer, offset, count);
+                if (bytesRead > 0) InspectData(buffer, offset, bytesRead);
+                return bytesRead;
+            }
+
+            public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+            {
+                int bytesRead = await _innerStream.ReadAsync(buffer, offset, count, cancellationToken).ConfigureAwait(false);
+                if (bytesRead > 0) InspectData(buffer, offset, bytesRead);
+                return bytesRead;
+            }
+
+            private void InspectData(byte[] buffer, int offset, int count)
+            {
+                try
+                {
+                    // 将字节转为字符串，注意：流式数据可能会截断多字节字符（如中文），
+                    // 但因为我们只关心 JSON key，这部分通常是 ASCII，风险较低。
+                    // 真正严谨的做法需要维护一个解码器状态，但这里为了简单直接转换。
+
+                    // 👆 管那么多干什么能用就行了，我只看看有没有开深度思考
+                    string chunk = Encoding.UTF8.GetString(buffer, offset, count);
+
+                    MatchCollection matches = _regex.Matches(chunk);
+                    foreach (Match match in matches)
+                    {
+                        if (match.Success && match.Groups.Count > 1)
+                        {
+                            string rawReasoning = match.Groups[1].Value;
+
+                            // JSON 转义字符处理（比如 \n 转换为换行，\" 转为 "）
+                            // 简单的反转义
+                            string unescaped = Regex.Unescape(rawReasoning);
+
+                            // 直接输出到控制台
+                            Console.Write(unescaped);
+
+                            // 同时输出到 VS 的调试窗口，防止 Console 没开的时候看不到
+                            System.Diagnostics.Debug.Write(unescaped);
+                        }
+                    }
+                }
+                catch
+                {
+                    // 忽略所有解析错误，不要影响主流程
+                }
+            }
+
+            public override long Seek(long offset, SeekOrigin origin) => _innerStream.Seek(offset, origin);
+            public override void SetLength(long value) => _innerStream.SetLength(value);
+            public override void Write(byte[] buffer, int offset, int count) => _innerStream.Write(buffer, offset, count);
+
+            protected override void Dispose(bool disposing)
+            {
+                if (disposing) _innerStream.Dispose();
+                base.Dispose(disposing);
+            }
+        }
+
+        /// <summary>
+        /// 专门用于拦截 OpenAI 请求并注入 extra_body 参数（如深度思考）的策略
+        /// </summary>
+        internal class DoubaoDeepThinkingPolicy : PipelinePolicy
+        {
+            public override void Process(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+            {
+                InjectThinkingParam(message);
+                ProcessNext(message, pipeline, currentIndex);
+            }
+
+            public override async ValueTask ProcessAsync(PipelineMessage message, IReadOnlyList<PipelinePolicy> pipeline, int currentIndex)
+            {
+                InjectThinkingParam(message);
+                await ProcessNextAsync(message, pipeline, currentIndex);
+            }
+
+            private void InjectThinkingParam(PipelineMessage message)
+            {
+                // 1. 仅拦截发往 chat/completions 的 POST 请求
+                if (message.Request.Method == "POST" &&
+                    (message.Request.Uri.AbsolutePath.EndsWith("/chat/completions") || message.Request.Uri.ToString().Contains("/chat/completions")))
+                {
+                    // 2. 读取原始 JSON Body
+                    var content = message.Request.Content;
+                    if (content != null)
+                    {
+                        using (MemoryStream ms = new MemoryStream())
+                        {
+                            content.WriteTo(ms, default);
+                            ms.Position = 0;
+
+                            try
+                            {
+                                // 3. 解析并修改 JSON
+                                var jsonNode = JsonNode.Parse(ms).AsObject();
+
+                                // 注入 thinking 参数 (对应 Python 的 extra_body={"thinking": {"type": "enabled"}})
+                                jsonNode["thinking"] = new JsonObject
+                                {
+                                    ["type"] = "enabled"
+                                };
+
+                                // 4. 写回 Request Body
+                                var newJson = jsonNode.ToJsonString();
+                                message.Request.Content = BinaryContent.Create(BinaryData.FromString(newJson));
+                            }
+                            catch
+                            {
+                                // 如果解析失败，保持原样，不影响正常流程
+                            }
+                        }
+                    }
+                }
             }
         }
 

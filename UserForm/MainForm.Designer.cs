@@ -74,6 +74,7 @@
             this.IsHideUIAoutInChatForm = new System.Windows.Forms.CheckBox();
             this.IsDeleteHistoryPic = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
+            this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.IsAnthropicCheckBox = new System.Windows.Forms.CheckBox();
@@ -85,7 +86,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.button5 = new System.Windows.Forms.Button();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -468,6 +468,8 @@
             // IsHideUIAoutInChatForm
             // 
             this.IsHideUIAoutInChatForm.AutoSize = true;
+            this.IsHideUIAoutInChatForm.Checked = true;
+            this.IsHideUIAoutInChatForm.CheckState = System.Windows.Forms.CheckState.Checked;
             this.IsHideUIAoutInChatForm.Location = new System.Drawing.Point(10, 45);
             this.IsHideUIAoutInChatForm.Name = "IsHideUIAoutInChatForm";
             this.IsHideUIAoutInChatForm.Size = new System.Drawing.Size(192, 21);
@@ -478,6 +480,8 @@
             // IsDeleteHistoryPic
             // 
             this.IsDeleteHistoryPic.AutoSize = true;
+            this.IsDeleteHistoryPic.Checked = true;
+            this.IsDeleteHistoryPic.CheckState = System.Windows.Forms.CheckState.Checked;
             this.IsDeleteHistoryPic.Location = new System.Drawing.Point(10, 22);
             this.IsDeleteHistoryPic.Name = "IsDeleteHistoryPic";
             this.IsDeleteHistoryPic.Size = new System.Drawing.Size(168, 21);
@@ -506,6 +510,16 @@
             this.groupBox2.TabIndex = 1;
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "API和密钥配置";
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(605, 100);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(75, 23);
+            this.button5.TabIndex = 11;
+            this.button5.Text = "GC";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // button4
             // 
@@ -604,16 +618,6 @@
             this.label1.Size = new System.Drawing.Size(54, 17);
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
-            // 
-            // button5
-            // 
-            this.button5.Location = new System.Drawing.Point(605, 100);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(75, 23);
-            this.button5.TabIndex = 11;
-            this.button5.Text = "GC";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
             // 
             // MainForm
             // 

@@ -158,8 +158,8 @@ namespace XiaoYu_LAM.UIAEngine
                 AIFunctionFactory.Create(new Func<int, string>(this.RightClick), name: "RightClick"),
                 AIFunctionFactory.Create(new Func<int, string, string>(this.SetValue), name: "SetValue"),
                 AIFunctionFactory.Create(new Func<int, string, string>(this.TypeText), name: "TypeText"),
-                AIFunctionFactory.Create(new Func<string, string>(this.PressKey), name: "PressKey")
-                //AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll")
+                AIFunctionFactory.Create(new Func<string, string>(this.PressKey), name: "PressKey"),
+                AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll")
                 //AIFunctionFactory.Create(new Func<long, string>(this.BringWindowToFront), name: "BringWindowToFront")
             };
         }
