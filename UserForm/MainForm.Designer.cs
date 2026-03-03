@@ -86,6 +86,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.IsDeepThinkMode = new System.Windows.Forms.CheckBox();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -455,6 +456,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.IsDeepThinkMode);
             this.groupBox3.Controls.Add(this.IsHideUIAoutInChatForm);
             this.groupBox3.Controls.Add(this.IsDeleteHistoryPic);
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
@@ -619,6 +621,18 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
             // 
+            // IsDeepThinkMode
+            // 
+            this.IsDeepThinkMode.AutoSize = true;
+            this.IsDeepThinkMode.Checked = true;
+            this.IsDeepThinkMode.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.IsDeepThinkMode.Location = new System.Drawing.Point(209, 22);
+            this.IsDeepThinkMode.Name = "IsDeepThinkMode";
+            this.IsDeepThinkMode.Size = new System.Drawing.Size(99, 21);
+            this.IsDeepThinkMode.TabIndex = 2;
+            this.IsDeepThinkMode.Text = "启用深度思考";
+            this.IsDeepThinkMode.UseVisualStyleBackColor = true;
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -711,5 +725,6 @@
         private System.Windows.Forms.Button button1;
         private System.Windows.Forms.CheckBox IsHideUIAoutInChatForm;
         private System.Windows.Forms.Button button5;
+        private System.Windows.Forms.CheckBox IsDeepThinkMode;
     }
 }

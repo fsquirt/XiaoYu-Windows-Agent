@@ -51,6 +51,7 @@ namespace XiaoYu_LAM.AgentEngine
             string apiUrl = "";
             string apiKey = "";
             string protocol = "";
+            bool isdeepseek = false;
 
             try
             {
@@ -62,6 +63,11 @@ namespace XiaoYu_LAM.AgentEngine
                     apiUrl = mainForm.API_URL ?? "";
                     apiKey = mainForm.API_KEY ?? "";
                     protocol = mainForm.PROTOCOL ?? "";
+                    var chk = mainForm.Controls.Find("IsDeepThinkMode", true).FirstOrDefault() as CheckBox;
+                    if(chk.Checked)
+                    {
+                        isdeepseek = true;
+                    }
                 }
                 else
                 {
@@ -97,10 +103,13 @@ namespace XiaoYu_LAM.AgentEngine
                 // 创建基础 OpenAI Client
                 OpenAIClientOptions options = new OpenAIClientOptions() { Endpoint = new Uri(apiUrl) };
 
-                // 请求拦截器：注入 thinking: { type: enabled}
-                options.AddPolicy(new DoubaoDeepThinkingPolicy(), PipelinePosition.PerCall);
-                // 响应拦截器：拿下流数据，打印 reasoning_content
-                options.AddPolicy(new DoubaoReasoningResponsePolicy(), PipelinePosition.PerCall);
+                if(isdeepseek == true)
+                {
+                    // 请求拦截器：注入 thinking: { type: enabled}
+                    options.AddPolicy(new DoubaoDeepThinkingPolicy(), PipelinePosition.PerCall);
+                    // 响应拦截器：拿下流数据，打印 reasoning_content
+                    options.AddPolicy(new DoubaoReasoningResponsePolicy(), PipelinePosition.PerCall);
+                }
 
                 OpenAI.Chat.ChatClient rawClient = new OpenAIClient(new ApiKeyCredential(apiKey), options).GetChatClient(modelName);
 

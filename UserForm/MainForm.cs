@@ -22,7 +22,6 @@ namespace XiaoYu_LAM
         public string MODEL_NAME = "";
         public string API_URL = "";
         public string API_KEY = "";
-
         public string PROTOCOL = "";
 
 
