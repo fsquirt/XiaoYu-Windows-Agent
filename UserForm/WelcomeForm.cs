@@ -230,27 +230,67 @@ namespace XiaoYu_LAM
 
         private void button1_Click(object sender, EventArgs e)
         {
-            // 将API配置保存到程序目录下config.ini文件然后启动主窗口
             try
             {
                 string apiUrl = (textBox1.Text ?? string.Empty).Trim();
                 string apiKey = (textBox2.Text ?? string.Empty).Trim();
                 string modelName = (textBox3.Text ?? string.Empty).Trim();
                 string protocol = checkBox1.Checked ? "OpenAI" : (checkBox2.Checked ? "Anthropic" : "Unknown");
-
-                var lines = new System.Collections.Generic.List<string>();
-                lines.Add("[LLM_PROVIDER]");
-                lines.Add("API_URL=" + apiUrl);
-                lines.Add("API_KEY=" + apiKey);
-                lines.Add("MODEL_NAME=" + modelName);
-                lines.Add("PROTOCOL=" + protocol);
-
                 string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
-                System.IO.File.WriteAllLines(path, lines, System.Text.Encoding.UTF8);
 
-                toolStripStatusLabel1.Text = ("配置已保存: " + path);
+                System.Collections.Generic.List<string> skillsSection = new System.Collections.Generic.List<string>();
+                if (System.IO.File.Exists(path))
+                {
+                    var oldLines = System.IO.File.ReadAllLines(path, System.Text.Encoding.UTF8);
+                    bool inSkills = false;
+                    foreach (var line in oldLines)
+                    {
+                        string trimmedLine = line.Trim();
+                        // 发现 [SKILLS] 节开始
+                        if (trimmedLine.Equals("[SKILLS]", StringComparison.OrdinalIgnoreCase))
+                        {
+                            inSkills = true;
+                        }
+                        // 如果已经在 SKILLS 节中，且碰到了下一个 [ 节标志，则停止记录
+                        else if (inSkills && trimmedLine.StartsWith("[") && trimmedLine.EndsWith("]"))
+                        {
+                            inSkills = false;
+                        }
 
-                // 启动主窗口并隐藏当前向导，关闭主窗口时同时关闭向导以结束程序
+                        if (inSkills)
+                        {
+                            skillsSection.Add(line);
+                        }
+                    }
+                }
+
+                // 重新构建文件内容
+                var newLines = new System.Collections.Generic.List<string>();
+
+                // 写入 [LLM_PROVIDER] 节
+                newLines.Add("[LLM_PROVIDER]");
+                newLines.Add("API_URL=" + apiUrl);
+                newLines.Add("API_KEY=" + apiKey);
+                newLines.Add("MODEL_NAME=" + modelName);
+                newLines.Add("PROTOCOL=" + protocol);
+                newLines.Add("");
+
+                // 将保留的 [SKILLS] 节写回
+                if (skillsSection.Count > 0)
+                {
+                    newLines.AddRange(skillsSection);
+                }
+                else
+                {
+                    // 如果原本没有 [SKILLS] 节，可以初始化一个空的（可选）
+                    newLines.Add("[SKILLS]");
+                    newLines.Add("ENABLE=False");
+                    newLines.Add("SKILLSPATH=");
+                }
+
+                // 写入文件
+                System.IO.File.WriteAllLines(path, newLines, System.Text.Encoding.UTF8);
+
                 var main = new MainForm();
                 main.FormClosed += (s, ev) => this.Close();
                 main.Show();

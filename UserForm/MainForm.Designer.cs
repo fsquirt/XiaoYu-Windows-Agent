@@ -67,14 +67,25 @@
             this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage4 = new System.Windows.Forms.TabPage();
-            this.tabPage5 = new System.Windows.Forms.TabPage();
             this.tabPage6 = new System.Windows.Forms.TabPage();
+            this.ChatListView = new System.Windows.Forms.ListView();
+            this.ChatTitle = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ChatCreateTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ChatMarkDownFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage7 = new System.Windows.Forms.TabPage();
+            this.button7 = new System.Windows.Forms.Button();
+            this.button6 = new System.Windows.Forms.Button();
+            this.button5 = new System.Windows.Forms.Button();
+            this.groupBox4 = new System.Windows.Forms.GroupBox();
+            this.SkillFolderlistView = new System.Windows.Forms.ListView();
+            this.SkillsFolderPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.AddSkillsPathButton = new System.Windows.Forms.Button();
+            this.IsUseAgentSkills = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.IsDeepThinkMode = new System.Windows.Forms.CheckBox();
             this.IsHideUIAoutInChatForm = new System.Windows.Forms.CheckBox();
             this.IsDeleteHistoryPic = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.button5 = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button1 = new System.Windows.Forms.Button();
             this.IsAnthropicCheckBox = new System.Windows.Forms.CheckBox();
@@ -86,7 +97,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.IsDeepThinkMode = new System.Windows.Forms.CheckBox();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -95,7 +105,9 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage6.SuspendLayout();
             this.tabPage7.SuspendLayout();
+            this.groupBox4.SuspendLayout();
             this.groupBox3.SuspendLayout();
             this.groupBox2.SuspendLayout();
             this.SuspendLayout();
@@ -275,7 +287,6 @@
             this.tabControl1.Controls.Add(this.tabPage2);
             this.tabControl1.Controls.Add(this.tabPage3);
             this.tabControl1.Controls.Add(this.tabPage4);
-            this.tabControl1.Controls.Add(this.tabPage5);
             this.tabControl1.Controls.Add(this.tabPage6);
             this.tabControl1.Controls.Add(this.tabPage7);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
@@ -307,7 +318,7 @@
             this.LogrichTextBox1.Name = "LogrichTextBox1";
             this.LogrichTextBox1.Size = new System.Drawing.Size(781, 381);
             this.LogrichTextBox1.TabIndex = 3;
-            this.LogrichTextBox1.Text = "等待任务开始执行...";
+            this.LogrichTextBox1.Text = "这里将显示大模型的深度思考和其他日志...\n";
             // 
             // tabPage2
             // 
@@ -352,6 +363,7 @@
             this.button3.TabIndex = 1;
             this.button3.Text = "保存图片";
             this.button3.UseVisualStyleBackColor = true;
+            this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
             // button2
             // 
@@ -425,26 +437,54 @@
             this.tabPage4.Text = "记忆";
             this.tabPage4.UseVisualStyleBackColor = true;
             // 
-            // tabPage5
-            // 
-            this.tabPage5.Location = new System.Drawing.Point(4, 25);
-            this.tabPage5.Name = "tabPage5";
-            this.tabPage5.Size = new System.Drawing.Size(787, 387);
-            this.tabPage5.TabIndex = 4;
-            this.tabPage5.Text = "技能";
-            this.tabPage5.UseVisualStyleBackColor = true;
-            // 
             // tabPage6
             // 
+            this.tabPage6.Controls.Add(this.ChatListView);
             this.tabPage6.Location = new System.Drawing.Point(4, 25);
             this.tabPage6.Name = "tabPage6";
             this.tabPage6.Size = new System.Drawing.Size(787, 387);
             this.tabPage6.TabIndex = 5;
-            this.tabPage6.Text = "会话";
+            this.tabPage6.Text = "对话记录";
             this.tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // ChatListView
+            // 
+            this.ChatListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.ChatTitle,
+            this.ChatCreateTime,
+            this.ChatMarkDownFile});
+            this.ChatListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ChatListView.FullRowSelect = true;
+            this.ChatListView.GridLines = true;
+            this.ChatListView.HideSelection = false;
+            this.ChatListView.Location = new System.Drawing.Point(0, 0);
+            this.ChatListView.Name = "ChatListView";
+            this.ChatListView.Size = new System.Drawing.Size(787, 387);
+            this.ChatListView.TabIndex = 0;
+            this.ChatListView.UseCompatibleStateImageBehavior = false;
+            this.ChatListView.View = System.Windows.Forms.View.Details;
+            // 
+            // ChatTitle
+            // 
+            this.ChatTitle.Text = "会话标题";
+            this.ChatTitle.Width = 188;
+            // 
+            // ChatCreateTime
+            // 
+            this.ChatCreateTime.Text = "创建时间";
+            this.ChatCreateTime.Width = 200;
+            // 
+            // ChatMarkDownFile
+            // 
+            this.ChatMarkDownFile.Text = "文件路径";
+            this.ChatMarkDownFile.Width = 392;
             // 
             // tabPage7
             // 
+            this.tabPage7.Controls.Add(this.button7);
+            this.tabPage7.Controls.Add(this.button6);
+            this.tabPage7.Controls.Add(this.button5);
+            this.tabPage7.Controls.Add(this.groupBox4);
             this.tabPage7.Controls.Add(this.groupBox3);
             this.tabPage7.Controls.Add(this.groupBox2);
             this.tabPage7.Location = new System.Drawing.Point(4, 25);
@@ -454,6 +494,90 @@
             this.tabPage7.Text = "设置";
             this.tabPage7.UseVisualStyleBackColor = true;
             // 
+            // button7
+            // 
+            this.button7.Location = new System.Drawing.Point(209, 361);
+            this.button7.Name = "button7";
+            this.button7.Size = new System.Drawing.Size(102, 23);
+            this.button7.TabIndex = 13;
+            this.button7.Text = "修改程序配置";
+            this.button7.UseVisualStyleBackColor = true;
+            this.button7.Click += new System.EventHandler(this.button7_Click);
+            // 
+            // button6
+            // 
+            this.button6.Location = new System.Drawing.Point(100, 361);
+            this.button6.Name = "button6";
+            this.button6.Size = new System.Drawing.Size(102, 23);
+            this.button6.TabIndex = 12;
+            this.button6.Text = "修改系统提示词";
+            this.button6.UseVisualStyleBackColor = true;
+            this.button6.Click += new System.EventHandler(this.button6_Click);
+            // 
+            // button5
+            // 
+            this.button5.Location = new System.Drawing.Point(3, 361);
+            this.button5.Name = "button5";
+            this.button5.Size = new System.Drawing.Size(91, 23);
+            this.button5.TabIndex = 11;
+            this.button5.Text = "GC一下";
+            this.button5.UseVisualStyleBackColor = true;
+            this.button5.Click += new System.EventHandler(this.button5_Click);
+            // 
+            // groupBox4
+            // 
+            this.groupBox4.Controls.Add(this.SkillFolderlistView);
+            this.groupBox4.Controls.Add(this.AddSkillsPathButton);
+            this.groupBox4.Controls.Add(this.IsUseAgentSkills);
+            this.groupBox4.Dock = System.Windows.Forms.DockStyle.Top;
+            this.groupBox4.Location = new System.Drawing.Point(0, 216);
+            this.groupBox4.Name = "groupBox4";
+            this.groupBox4.Size = new System.Drawing.Size(787, 121);
+            this.groupBox4.TabIndex = 3;
+            this.groupBox4.TabStop = false;
+            this.groupBox4.Text = "技能设置";
+            // 
+            // SkillFolderlistView
+            // 
+            this.SkillFolderlistView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.SkillsFolderPath});
+            this.SkillFolderlistView.Dock = System.Windows.Forms.DockStyle.Right;
+            this.SkillFolderlistView.FullRowSelect = true;
+            this.SkillFolderlistView.GridLines = true;
+            this.SkillFolderlistView.HideSelection = false;
+            this.SkillFolderlistView.Location = new System.Drawing.Point(158, 18);
+            this.SkillFolderlistView.Name = "SkillFolderlistView";
+            this.SkillFolderlistView.Size = new System.Drawing.Size(626, 100);
+            this.SkillFolderlistView.TabIndex = 2;
+            this.SkillFolderlistView.UseCompatibleStateImageBehavior = false;
+            this.SkillFolderlistView.View = System.Windows.Forms.View.Details;
+            // 
+            // SkillsFolderPath
+            // 
+            this.SkillsFolderPath.Text = "Skills路径";
+            this.SkillsFolderPath.Width = 616;
+            // 
+            // AddSkillsPathButton
+            // 
+            this.AddSkillsPathButton.Location = new System.Drawing.Point(10, 49);
+            this.AddSkillsPathButton.Name = "AddSkillsPathButton";
+            this.AddSkillsPathButton.Size = new System.Drawing.Size(128, 23);
+            this.AddSkillsPathButton.TabIndex = 1;
+            this.AddSkillsPathButton.Text = "添加Skills路径";
+            this.AddSkillsPathButton.UseVisualStyleBackColor = true;
+            this.AddSkillsPathButton.Click += new System.EventHandler(this.AddSkillsPathButton_Click);
+            // 
+            // IsUseAgentSkills
+            // 
+            this.IsUseAgentSkills.AutoSize = true;
+            this.IsUseAgentSkills.Location = new System.Drawing.Point(10, 22);
+            this.IsUseAgentSkills.Name = "IsUseAgentSkills";
+            this.IsUseAgentSkills.Size = new System.Drawing.Size(142, 21);
+            this.IsUseAgentSkills.TabIndex = 0;
+            this.IsUseAgentSkills.Text = "使用通用Agent Skills";
+            this.IsUseAgentSkills.UseVisualStyleBackColor = true;
+            this.IsUseAgentSkills.CheckedChanged += new System.EventHandler(this.IsUseAgentSkills_CheckedChanged);
+            // 
             // groupBox3
             // 
             this.groupBox3.Controls.Add(this.IsDeepThinkMode);
@@ -462,10 +586,22 @@
             this.groupBox3.Dock = System.Windows.Forms.DockStyle.Top;
             this.groupBox3.Location = new System.Drawing.Point(0, 137);
             this.groupBox3.Name = "groupBox3";
-            this.groupBox3.Size = new System.Drawing.Size(787, 90);
+            this.groupBox3.Size = new System.Drawing.Size(787, 79);
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "对话设置";
+            // 
+            // IsDeepThinkMode
+            // 
+            this.IsDeepThinkMode.AutoSize = true;
+            this.IsDeepThinkMode.Checked = true;
+            this.IsDeepThinkMode.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.IsDeepThinkMode.Location = new System.Drawing.Point(209, 22);
+            this.IsDeepThinkMode.Name = "IsDeepThinkMode";
+            this.IsDeepThinkMode.Size = new System.Drawing.Size(99, 21);
+            this.IsDeepThinkMode.TabIndex = 2;
+            this.IsDeepThinkMode.Text = "启用深度思考";
+            this.IsDeepThinkMode.UseVisualStyleBackColor = true;
             // 
             // IsHideUIAoutInChatForm
             // 
@@ -493,7 +629,6 @@
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.button5);
             this.groupBox2.Controls.Add(this.button4);
             this.groupBox2.Controls.Add(this.button1);
             this.groupBox2.Controls.Add(this.IsAnthropicCheckBox);
@@ -513,19 +648,9 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "API和密钥配置";
             // 
-            // button5
-            // 
-            this.button5.Location = new System.Drawing.Point(605, 100);
-            this.button5.Name = "button5";
-            this.button5.Size = new System.Drawing.Size(75, 23);
-            this.button5.TabIndex = 11;
-            this.button5.Text = "GC";
-            this.button5.UseVisualStyleBackColor = true;
-            this.button5.Click += new System.EventHandler(this.button5_Click);
-            // 
             // button4
             // 
-            this.button4.Location = new System.Drawing.Point(233, 100);
+            this.button4.Location = new System.Drawing.Point(334, 102);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(75, 23);
             this.button4.TabIndex = 10;
@@ -534,7 +659,7 @@
             // 
             // button1
             // 
-            this.button1.Location = new System.Drawing.Point(314, 100);
+            this.button1.Location = new System.Drawing.Point(415, 102);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(75, 23);
             this.button1.TabIndex = 9;
@@ -544,17 +669,18 @@
             // IsAnthropicCheckBox
             // 
             this.IsAnthropicCheckBox.AutoSize = true;
-            this.IsAnthropicCheckBox.Location = new System.Drawing.Point(144, 102);
+            this.IsAnthropicCheckBox.Enabled = false;
+            this.IsAnthropicCheckBox.Location = new System.Drawing.Point(156, 102);
             this.IsAnthropicCheckBox.Name = "IsAnthropicCheckBox";
-            this.IsAnthropicCheckBox.Size = new System.Drawing.Size(83, 21);
+            this.IsAnthropicCheckBox.Size = new System.Drawing.Size(139, 21);
             this.IsAnthropicCheckBox.TabIndex = 8;
-            this.IsAnthropicCheckBox.Text = "Anthropic";
+            this.IsAnthropicCheckBox.Text = "Anthropic(尚未兼容)";
             this.IsAnthropicCheckBox.UseVisualStyleBackColor = true;
             // 
             // label4
             // 
             this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(2, 103);
+            this.label4.Location = new System.Drawing.Point(8, 103);
             this.label4.Name = "label4";
             this.label4.Size = new System.Drawing.Size(59, 17);
             this.label4.TabIndex = 7;
@@ -563,7 +689,7 @@
             // IsOpenAICheckBox
             // 
             this.IsOpenAICheckBox.AutoSize = true;
-            this.IsOpenAICheckBox.Location = new System.Drawing.Point(67, 102);
+            this.IsOpenAICheckBox.Location = new System.Drawing.Point(79, 102);
             this.IsOpenAICheckBox.Name = "IsOpenAICheckBox";
             this.IsOpenAICheckBox.Size = new System.Drawing.Size(71, 21);
             this.IsOpenAICheckBox.TabIndex = 6;
@@ -621,18 +747,6 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
             // 
-            // IsDeepThinkMode
-            // 
-            this.IsDeepThinkMode.AutoSize = true;
-            this.IsDeepThinkMode.Checked = true;
-            this.IsDeepThinkMode.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.IsDeepThinkMode.Location = new System.Drawing.Point(209, 22);
-            this.IsDeepThinkMode.Name = "IsDeepThinkMode";
-            this.IsDeepThinkMode.Size = new System.Drawing.Size(99, 21);
-            this.IsDeepThinkMode.TabIndex = 2;
-            this.IsDeepThinkMode.Text = "启用深度思考";
-            this.IsDeepThinkMode.UseVisualStyleBackColor = true;
-            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -656,7 +770,10 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.tabPage6.ResumeLayout(false);
             this.tabPage7.ResumeLayout(false);
+            this.groupBox4.ResumeLayout(false);
+            this.groupBox4.PerformLayout();
             this.groupBox3.ResumeLayout(false);
             this.groupBox3.PerformLayout();
             this.groupBox2.ResumeLayout(false);
@@ -696,7 +813,6 @@
         private System.Windows.Forms.RichTextBox LogrichTextBox1;
         private System.Windows.Forms.TabPage tabPage3;
         private System.Windows.Forms.TabPage tabPage4;
-        private System.Windows.Forms.TabPage tabPage5;
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button3;
@@ -726,5 +842,16 @@
         private System.Windows.Forms.CheckBox IsHideUIAoutInChatForm;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.CheckBox IsDeepThinkMode;
+        private System.Windows.Forms.ListView ChatListView;
+        private System.Windows.Forms.ColumnHeader ChatTitle;
+        private System.Windows.Forms.ColumnHeader ChatCreateTime;
+        private System.Windows.Forms.ColumnHeader ChatMarkDownFile;
+        private System.Windows.Forms.GroupBox groupBox4;
+        private System.Windows.Forms.CheckBox IsUseAgentSkills;
+        private System.Windows.Forms.Button button6;
+        private System.Windows.Forms.Button AddSkillsPathButton;
+        private System.Windows.Forms.ListView SkillFolderlistView;
+        private System.Windows.Forms.ColumnHeader SkillsFolderPath;
+        private System.Windows.Forms.Button button7;
     }
 }

@@ -6,6 +6,7 @@ using OpenAI.Chat;
 using System;
 using System.ClientModel;
 using System.ClientModel.Primitives;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Imaging;
@@ -26,6 +27,7 @@ namespace XiaoYu_LAM.AgentEngine
 {
     internal class MSAFEngine
     {
+
         public AIAgent XiaoYuAgent { get; private set; }
 
         // 暂存由底层扫描触发的图片，等待 Middleware 注入给 LLM
@@ -52,6 +54,8 @@ namespace XiaoYu_LAM.AgentEngine
             string apiKey = "";
             string protocol = "";
             bool isdeepseek = false;
+            bool UseAgentSkills = false;
+            string[] SkillsFolders = new string[0];
 
             try
             {
@@ -68,6 +72,8 @@ namespace XiaoYu_LAM.AgentEngine
                     {
                         isdeepseek = true;
                     }
+                    UseAgentSkills = mainForm.UseAgentSkills;
+                    SkillsFolders = mainForm.SkillsFolders;
                 }
                 else
                 {
@@ -112,22 +118,59 @@ namespace XiaoYu_LAM.AgentEngine
                 }
 
                 OpenAI.Chat.ChatClient rawClient = new OpenAIClient(new ApiKeyCredential(apiKey), options).GetChatClient(modelName);
-
                 // 将其转为 MSAF 标准的 IChatClient，并挂载图片注入中间件
                 IChatClient meaiClient = new ImageInjectingChatClient(rawClient.AsIChatClient(), this);
 
-                // 构建 MSAF AIAgent，并把 uiEngine 里的工具全塞进去
-                XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
+#pragma warning disable MAAI001 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
+                ChatOptions chatOptions = new ChatOptions();
+
+                if(isdeepseek) // 使用思考
                 {
-                    Name = "晓予",
-                    ChatOptions = new ChatOptions()
+                    Console.WriteLine("使用深度思考模式");
+                    chatOptions = new ChatOptions()
                     {
                         Instructions = sysPrompt,
-                        Tools = uiEngine.GetTools() // 直接获取原生工具
-                    }
-                });
+                        Tools = uiEngine.GetTools(), // 直接获取原生工具
+                        Reasoning = new ReasoningOptions()
+                        {
+                            Effort = ReasoningEffort.High,
+                            Output = ReasoningOutput.Full
+                        },
+                    };
+                }
+                else
+                {
+                    chatOptions = new ChatOptions()
+                    {
+                        Instructions = sysPrompt,
+                        Tools = uiEngine.GetTools()
+                    };
+                }
+
+                if ((UseAgentSkills) || (SkillsFolders.Count() > 0)) // 使用技能
+                {
+                    Console.WriteLine("使用Skills");
+                    FileAgentSkillsProvider skillsProvider = new FileAgentSkillsProvider(skillPaths: SkillsFolders);
+                    // 构建 MSAF AIAgent，并把 uiEngine 里的工具全塞进去
+                    XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
+                    {
+                        Name = "晓予",
+                        ChatOptions = chatOptions,
+                        AIContextProviders = new List<AIContextProvider>{skillsProvider}
+                    });
+                }
+                else
+                {
+                    XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
+                    {
+                        Name = "晓予",
+                        ChatOptions = chatOptions
+                    });
+                }
             }
-            else if(protocol == "Anthropic")
+
+#pragma warning restore MAAI001 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
+            else if (protocol == "Anthropic")
             {
                 AnthropicClient rawClient = new AnthropicClient { ApiKey=apiKey,BaseUrl=apiUrl};
 
@@ -216,6 +259,8 @@ namespace XiaoYu_LAM.AgentEngine
                 return await XiaoYuAgent.DeserializeSessionAsync(sessionElement);
             }
         }
+
+
 
         /// <summary>
         /// 响应流拦截策略：用于替换原始响应流，以便偷窥数据
