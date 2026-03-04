@@ -39,7 +39,6 @@
             this.保存日志ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.退出ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.选项OToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.前端显示ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.接入QQToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.查看VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -191,30 +190,24 @@
             // 选项OToolStripMenuItem
             // 
             this.选项OToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.前端显示ToolStripMenuItem,
             this.接入QQToolStripMenuItem,
             this.设置ToolStripMenuItem});
             this.选项OToolStripMenuItem.Name = "选项OToolStripMenuItem";
             this.选项OToolStripMenuItem.Size = new System.Drawing.Size(62, 21);
             this.选项OToolStripMenuItem.Text = "选项(O)";
             // 
-            // 前端显示ToolStripMenuItem
-            // 
-            this.前端显示ToolStripMenuItem.Name = "前端显示ToolStripMenuItem";
-            this.前端显示ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
-            this.前端显示ToolStripMenuItem.Text = "前端显示";
-            // 
             // 接入QQToolStripMenuItem
             // 
             this.接入QQToolStripMenuItem.Name = "接入QQToolStripMenuItem";
-            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.接入QQToolStripMenuItem.Text = "接入QQ";
             // 
             // 设置ToolStripMenuItem
             // 
             this.设置ToolStripMenuItem.Name = "设置ToolStripMenuItem";
-            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
             this.设置ToolStripMenuItem.Text = "设置";
+            this.设置ToolStripMenuItem.Click += new System.EventHandler(this.设置ToolStripMenuItem_Click);
             // 
             // 查看VToolStripMenuItem
             // 
@@ -603,6 +596,7 @@
             this.IsDeepThinkMode.TabIndex = 2;
             this.IsDeepThinkMode.Text = "启用深度思考";
             this.IsDeepThinkMode.UseVisualStyleBackColor = true;
+            this.IsDeepThinkMode.CheckedChanged += new System.EventHandler(this.IsDeepThinkMode_CheckedChanged);
             // 
             // IsHideUIAoutInChatForm
             // 
@@ -615,6 +609,7 @@
             this.IsHideUIAoutInChatForm.TabIndex = 1;
             this.IsHideUIAoutInChatForm.Text = "在聊天窗口中隐藏UIA引擎输出";
             this.IsHideUIAoutInChatForm.UseVisualStyleBackColor = true;
+            this.IsHideUIAoutInChatForm.CheckedChanged += new System.EventHandler(this.IsHideUIAoutInChatForm_CheckedChanged);
             // 
             // IsDeleteHistoryPic
             // 
@@ -627,6 +622,7 @@
             this.IsDeleteHistoryPic.TabIndex = 0;
             this.IsDeleteHistoryPic.Text = "删除历史图片以节省token";
             this.IsDeleteHistoryPic.UseVisualStyleBackColor = true;
+            this.IsDeleteHistoryPic.CheckedChanged += new System.EventHandler(this.IsDeleteHistoryPic_CheckedChanged);
             // 
             // groupBox2
             // 
@@ -798,7 +794,6 @@
         private System.Windows.Forms.ToolStripMenuItem 新建任务ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 保存日志ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 退出ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 前端显示ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 接入QQToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 设置ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 刷新ToolStripMenuItem;

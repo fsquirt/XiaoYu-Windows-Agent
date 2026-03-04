@@ -11,6 +11,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using XiaoYu_LAM.AgentEngine;
+using XiaoYu_LAM.UIAEngine;
 using XiaoYu_LAM.ToolForm;
 
 namespace XiaoYu_LAM
@@ -19,18 +20,24 @@ namespace XiaoYu_LAM
     {
         // 静态实例，方便其他地方万一需要直接操作 MainForm（虽然用 Console 就够了）
         public static MainForm Instance;
-        public MainForm()
+        public MainForm(string initialTask = null)
         {
             InitializeComponent();
-            // 绑定窗体加载事件
             this.Load += MainForm_Load;
-
-            // 初始化右键菜单
             InitContextMenu();
             InitSkillsContextMenu();
             InitSchTaskContextMenu();
-
             Console.SetOut(new TextBoxWriter(this.LogrichTextBox1));
+
+            // 启动 IPC 监听
+            IPCManager.StartServer(HandleIncomingTask);
+
+            // 如果是带参数启动的，直接触发
+            if (!string.IsNullOrEmpty(initialTask))
+            {
+                // 延迟执行确保 UI 加载完毕
+                _ = Task.Delay(1000).ContinueWith(_ => HandleIncomingTask(initialTask));
+            }
         }
 
         public string MODEL_NAME = "";
@@ -182,74 +189,55 @@ namespace XiaoYu_LAM
 
         private void LoadConfig()
         {
-            // 从程序目录下的 config.ini 文件中读取配置
             try
             {
-                string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
-                if (System.IO.File.Exists(path))
+                // 基础 API 配置
+                textBox1.Text = ConfigManager.ApiUrl;
+                textBox3.Text = ConfigManager.ApiKey;
+                textBox2.Text = ConfigManager.ModelName;
+
+                if (ConfigManager.Protocol == "OpenAI")
+                    IsOpenAICheckBox.Checked = true;
+                else if (ConfigManager.Protocol == "Anthropic")
+                    IsAnthropicCheckBox.Checked = true;
+
+                // 特性设置 CheckBox 初始化
+                var chkDeepThink = this.Controls.Find("IsDeepThinkMode", true).FirstOrDefault() as CheckBox;
+                if (chkDeepThink != null) chkDeepThink.Checked = ConfigManager.IsDeepThinkMode;
+
+                var chkDelPic = this.Controls.Find("IsDeleteHistoryPic", true).FirstOrDefault() as CheckBox;
+                if (chkDelPic != null) chkDelPic.Checked = ConfigManager.IsDeleteHistoryPic;
+
+                var chkHideUIA = this.Controls.Find("IsHideUIAoutInChatForm", true).FirstOrDefault() as CheckBox;
+                if (chkHideUIA != null) chkHideUIA.Checked = ConfigManager.IsHideUIAoutInChatForm;
+
+                // Skills 模块初始化
+                // 暂时解绑事件，防止初始化时弹窗
+                IsUseAgentSkills.CheckedChanged -= IsUseAgentSkills_CheckedChanged;
+                IsUseAgentSkills.Checked = ConfigManager.EnableSkills;
+                IsUseAgentSkills.CheckedChanged += IsUseAgentSkills_CheckedChanged;
+
+                SkillFolderlistView.Items.Clear();
+                foreach (var p in ConfigManager.SkillsFolders)
                 {
-                    var lines = System.IO.File.ReadAllLines(path, System.Text.Encoding.UTF8);
-                    foreach (var line in lines)
-                    {
-                        if (!line.Contains('=')) continue;
-                        var parts = line.Split(new char[] { '=' }, 2);
-                        string key = parts[0].Trim();
-                        string value = parts[1].Trim();
+                    SkillFolderlistView.Items.Add(new ListViewItem(p));
+                }
 
-                        if (key == "MODEL_NAME") MODEL_NAME = value;
-                        else if (key == "PROTOCOL") PROTOCOL = value;
-                        else if (key == "API_URL") API_URL = value;
-                        else if (key == "API_KEY") API_KEY = value;
-                        else if (key == "SKILLSPATH")
-                        {
-                            SkillsFolders = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries);
-                            SkillFolderlistView.Items.Clear();
-                            foreach (var p in SkillsFolders) SkillFolderlistView.Items.Add(new ListViewItem(p));
-                        }
-                        else if (key == "ENABLE")
-                        {
-                            // 解析 ENABLE 值
-                            UseAgentSkills = value.Equals("True", StringComparison.OrdinalIgnoreCase);
-                            // 暂时断开事件绑定，防止 LoadConfig 时触发 CheckChanged 又跑去写文件
-                            IsUseAgentSkills.CheckedChanged -= IsUseAgentSkills_CheckedChanged;
-                            IsUseAgentSkills.Checked = UseAgentSkills;
-                            IsUseAgentSkills.CheckedChanged += IsUseAgentSkills_CheckedChanged;
-                        }
-                    }
-
-                    // 在状态栏显示当前使用的模型和协议
-                    if ((MODEL_NAME == "") || (PROTOCOL == "") || (API_KEY == "") || (API_URL == ""))
-                    {
-                        toolStripStatusLabel1.Text = "配置文件缺少字段！请在欢迎窗口重新配置并验证可用性";
-                    }
-                    else
-                    {
-                        toolStripStatusLabel1.Text = $"当前模型: {MODEL_NAME}, 协议: {PROTOCOL}";
-                        toolStripStatusLabel2.Text = API_URL;
-                    }
+                // 4. 状态栏显示
+                if (!ConfigManager.IsConfigValid)
+                {
+                    toolStripStatusLabel1.Text = "配置文件缺少字段！请在欢迎窗口重新配置并验证可用性";
                 }
                 else
                 {
-                    toolStripStatusLabel1.Text = "未找到配置文件 config.ini";
+                    toolStripStatusLabel1.Text = $"当前模型: {ConfigManager.ModelName}, 协议: {ConfigManager.Protocol}";
+                    toolStripStatusLabel2.Text = ConfigManager.ApiUrl;
                 }
             }
             catch (Exception ex)
             {
-                MessageBox.Show("读取配置文件时发生错误：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                toolStripStatusLabel1.Text = "读取配置文件失败";
-            }
-
-            //将配置显示到设置页面里
-            textBox1.Text = API_URL;
-            textBox3.Text = API_KEY;
-            textBox2.Text = MODEL_NAME;
-            if (PROTOCOL == "OpenAI")
-            {
-                IsOpenAICheckBox.Checked = true;
-            }
-            else if (PROTOCOL == "Anthropic")
-            {
-                IsAnthropicCheckBox.Checked = true;
+                MessageBox.Show("应用配置到UI时发生错误：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                toolStripStatusLabel1.Text = "应用配置失败";
             }
         }
 
@@ -259,6 +247,8 @@ namespace XiaoYu_LAM
 
             // 清空现有列表项
             SchTaskListView.Items.Clear();
+
+            Console.WriteLine("当前共有" + TaskSchEngine.ListTaskFolderTasks().Count + "个计划任务。");
 
             foreach (TaskInfo task in TaskSchEngine.ListTaskFolderTasks())
             {
@@ -285,18 +275,26 @@ namespace XiaoYu_LAM
 
         public void UpdateVisionImage(Bitmap bmp)
         {
-            // 跨线程安全调用
             if (this.InvokeRequired)
             {
                 this.Invoke(new Action(() => UpdateVisionImage(bmp)));
                 return;
             }
+
+            // 先拿到旧图的引用
             Image oldImage = pictureBox1.Image;
+
+            // 断开引用
             pictureBox1.Image = null;
+
+            // 立即手动销毁旧图，释放 GDI 句柄
             if (oldImage != null)
             {
                 oldImage.Dispose();
+                oldImage = null;
             }
+
+            // 显示新图（克隆一份，防止源图被释放导致这里显示红叉）
             if (bmp != null)
             {
                 pictureBox1.Image = new Bitmap(bmp);
@@ -417,36 +415,15 @@ namespace XiaoYu_LAM
 
         private void SyncSkills()
         {
-            // 1. 同步内存变量
-            SkillsFolders = SkillFolderlistView.Items.Cast<ListViewItem>()
-                                .Select(item => item.Text)
-                                .ToArray();
-            UseAgentSkills = IsUseAgentSkills.Checked;
+            // 同步界面上的路径列表到 ConfigManager
+            ConfigManager.SkillsFolders = SkillFolderlistView.Items.Cast<ListViewItem>()
+                                               .Select(item => item.Text)
+                                               .ToArray();
 
-            // 2. 准备写入 config.ini
-            string path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
-            List<string> lines = File.Exists(path) ? File.ReadAllLines(path, Encoding.UTF8).ToList() : new List<string>();
+            ConfigManager.EnableSkills = IsUseAgentSkills.Checked;
 
-            string skillsPathLine = "SKILLSPATH=" + string.Join(",", SkillsFolders);
-            string enableLine = "ENABLE=" + (UseAgentSkills ? "True" : "False");
-
-            // 查找或创建 [SKILLS] 节
-            int sectionIndex = lines.FindIndex(l => l.Trim() == "[SKILLS]");
-            if (sectionIndex == -1)
-            {
-                lines.Add("");
-                lines.Add("[SKILLS]");
-                lines.Add(enableLine);
-                lines.Add(skillsPathLine);
-            }
-            else
-            {
-                // 更新或插入 ENABLE 和 SKILLSPATH
-                UpdateOrInsertConfigLine(lines, sectionIndex, "ENABLE=", enableLine);
-                UpdateOrInsertConfigLine(lines, sectionIndex, "SKILLSPATH=", skillsPathLine);
-            }
-
-            File.WriteAllLines(path, lines, Encoding.UTF8);
+            // 直接调用全局的保存方法
+            ConfigManager.SaveConfig();
         }
 
         // 辅助方法：在特定节之后更新或插入行
@@ -469,16 +446,49 @@ namespace XiaoYu_LAM
             Process.Start("notepad.exe", Path.GetFullPath("config.ini"));
         }
 
+        private void InitCheckBoxEvents()
+        {
+            var chkDeepThink = this.Controls.Find("IsDeepThinkMode", true).FirstOrDefault() as CheckBox;
+            if (chkDeepThink != null)
+            {
+                chkDeepThink.CheckedChanged += (s, e) =>
+                {
+                    ConfigManager.IsDeepThinkMode = chkDeepThink.Checked;
+                    ConfigManager.SaveConfig();
+                };
+            }
+
+            var chkDelPic = this.Controls.Find("IsDeleteHistoryPic", true).FirstOrDefault() as CheckBox;
+            if (chkDelPic != null)
+            {
+                chkDelPic.CheckedChanged += (s, e) =>
+                {
+                    ConfigManager.IsDeleteHistoryPic = chkDelPic.Checked;
+                    ConfigManager.SaveConfig();
+                };
+            }
+
+            var chkHideUIA = this.Controls.Find("IsHideUIAoutInChatForm", true).FirstOrDefault() as CheckBox;
+            if (chkHideUIA != null)
+            {
+                chkHideUIA.CheckedChanged += (s, e) =>
+                {
+                    ConfigManager.IsHideUIAoutInChatForm = chkHideUIA.Checked;
+                    ConfigManager.SaveConfig();
+                };
+            }
+        }
+
+        // 原始的 Skills 勾选事件，附带安全警告
         private void IsUseAgentSkills_CheckedChanged(object sender, EventArgs e)
         {
-            if (IsUseAgentSkills.Checked == true)
+            if (IsUseAgentSkills.Checked)
             {
                 MessageBox.Show("启用此选项后，将会使用Skills，虽然Microsoft Agent Framework暂时不支持脚本型Skills，但是此程序是直接操作这台计算机!!\n仅使用来自可信来源的技能。技能指令会注入到智能体的上下文中，并可能影响智能体的行为。", "安全性警告!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
 
-            // 更新变量并存入文件
-            UseAgentSkills = IsUseAgentSkills.Checked;
-            SyncSkills();
+            ConfigManager.EnableSkills = IsUseAgentSkills.Checked;
+            ConfigManager.SaveConfig();
         }
 
         private void InitSkillsContextMenu()
@@ -542,6 +552,81 @@ namespace XiaoYu_LAM
             {
                 LoadTaskSch();
             }
+        }
+
+        private void 设置ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            tabControl1.SelectedIndex = 5;
+        }
+
+        // 处理收到的计划任务
+        private void HandleIncomingTask(string task)
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(() => HandleIncomingTask(task)));
+                return;
+            }
+
+            // 检查是否有打开的 ChatForm
+            if (Application.OpenForms.OfType<ChatForm>().Any())
+            {
+                var res = MessageBox.Show($"收到计划任务：[{task}]\n当前存在正在进行的聊天会话，是否允许计划任务后台执行？(这可能会抢夺您的鼠标)",
+                    "计划任务", MessageBoxButtons.OKCancel, MessageBoxIcon.Warning);
+
+                if (res == DialogResult.Cancel)
+                {
+                    Console.WriteLine("用户取消了计划任务的执行。");
+                    return;
+                }
+            }
+
+            // 后台无头执行
+            ExecuteHeadlessTask(task);
+        }
+
+        private async void ExecuteHeadlessTask(string task)
+        {
+            Console.WriteLine($"\n========== 开始执行后台计划任务 ==========\n任务: {task}");
+
+            AgentRunner runner = new AgentRunner();
+
+            // 挂载控制台输出 (由于Console重定向了，这里会直接输出到LogrichTextBox1)
+            runner.OnStreamText += txt => Console.Write(txt);
+            runner.OnToolCall += tool => Console.WriteLine($"\n[调用工具: {tool}]");
+            runner.OnToolResult += (tool, res) => {
+                if (!ConfigManager.IsHideUIAoutInChatForm) Console.WriteLine($"\n[工具结果]:\n{res}");
+            };
+            runner.OnLog += (role, msg) => Console.WriteLine($"\n[{role}] {msg}");
+
+            // 释放图片内存防止泄漏
+            runner.OnImageScanned += (drawn, orig) => {
+                drawn?.Dispose();
+                orig?.Dispose();
+            };
+
+            await runner.RunTaskAsync(task);
+
+            Console.WriteLine($"\n========== 计划任务执行完毕 ==========\n");
+            runner.Dispose();
+        }
+
+        private void IsDeleteHistoryPic_CheckedChanged(object sender, EventArgs e)
+        {
+            ConfigManager.IsDeleteHistoryPic = IsDeleteHistoryPic.Checked;
+            ConfigManager.SaveConfig();
+        }
+
+        private void IsDeepThinkMode_CheckedChanged(object sender, EventArgs e)
+        {
+            ConfigManager.IsDeepThinkMode = IsDeepThinkMode.Checked;
+            ConfigManager.SaveConfig();
+        }
+
+        private void IsHideUIAoutInChatForm_CheckedChanged(object sender, EventArgs e)
+        {
+            ConfigManager.IsHideUIAoutInChatForm = IsHideUIAoutInChatForm.Checked;
+            ConfigManager.SaveConfig();
         }
     }
 }

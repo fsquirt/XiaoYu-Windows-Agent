@@ -249,6 +249,9 @@
   <ItemGroup>
     <Compile Include="AgentEngine\MSAFEngine.cs" />
     <Compile Include="AgentEngine\TaskSchEngine.cs" />
+    <Compile Include="AgentEngine\AgentRunner.cs" />
+    <Compile Include="AgentEngine\ConfigManager.cs" />
+    <Compile Include="AgentEngine\IPCManager.cs" />
     <Compile Include="UserForm\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>

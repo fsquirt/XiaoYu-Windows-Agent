@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace XiaoYu_LAM.AgentEngine
 {
-    internal class TaskSchEngine
+    public class TaskSchEngine
     {
-        public static string folderPath = @"\XiaoYu_Agnet";
+        public static string folderPath = @"\XiaoYu_Agent";
 
         // 注册计划任务文件夹
         public static void CreateTaskSchFolder()
@@ -228,7 +228,7 @@ namespace XiaoYu_LAM.AgentEngine
     }
 
     // 计划任务信息 DTO
-    internal class TaskInfo
+    public class TaskInfo
     {
         public string Name { get; set; }
         public string Triggers { get; set; }

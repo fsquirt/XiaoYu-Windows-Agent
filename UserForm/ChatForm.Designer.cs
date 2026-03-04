@@ -87,6 +87,7 @@
             // 
             this.txtInput.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.txtInput.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.txtInput.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.txtInput.Location = new System.Drawing.Point(0, 284);
             this.txtInput.Margin = new System.Windows.Forms.Padding(4);
             this.txtInput.Name = "txtInput";

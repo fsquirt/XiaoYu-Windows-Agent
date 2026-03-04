@@ -25,7 +25,7 @@ using ChatRole = Microsoft.Extensions.AI.ChatRole;
 
 namespace XiaoYu_LAM.AgentEngine
 {
-    internal class MSAFEngine
+    public class MSAFEngine
     {
 
         public AIAgent XiaoYuAgent { get; private set; }
@@ -48,55 +48,13 @@ namespace XiaoYu_LAM.AgentEngine
                 return;
             }
 
-            //读取MainForm里的API配置
-            string modelName = "";
-            string apiUrl = "";
-            string apiKey = "";
-            string protocol = "";
-            bool isdeepseek = false;
-            bool UseAgentSkills = false;
-            string[] SkillsFolders = new string[0];
-
-            try
-            {
-                // 在已打开的窗体中查找 MainForm 的实例
-                var mainForm = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
-                if (mainForm != null)
-                {
-                    modelName = mainForm.MODEL_NAME ?? "";
-                    apiUrl = mainForm.API_URL ?? "";
-                    apiKey = mainForm.API_KEY ?? "";
-                    protocol = mainForm.PROTOCOL ?? "";
-                    var chk = mainForm.Controls.Find("IsDeepThinkMode", true).FirstOrDefault() as CheckBox;
-                    if (chk.Checked)
-                    {
-                        isdeepseek = true;
-                    }
-                    UseAgentSkills = mainForm.UseAgentSkills;
-                    SkillsFolders = mainForm.SkillsFolders;
-                }
-                else
-                {
-                    // 退回到通过类型名查找（以防命名空间或加载时机不同）
-                    foreach (Form f in Application.OpenForms)
-                    {
-                        if (f.GetType().Name == "MainForm")
-                        {
-                            dynamic mf = f;
-                            try { modelName = mf.MODEL_NAME ?? ""; } catch { }
-                            try { apiUrl = mf.API_URL ?? ""; } catch { }
-                            try { apiKey = mf.API_KEY ?? ""; } catch { }
-                            try { protocol = mf.PROTOCOL ?? ""; } catch { }
-                            break;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                MessageBox.Show("读取主窗体配置失败: " + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
+            string modelName = ConfigManager.ModelName;
+            string apiUrl = ConfigManager.ApiUrl;
+            string apiKey = ConfigManager.ApiKey;
+            string protocol = ConfigManager.Protocol;
+            bool isdeepseek = ConfigManager.IsDeepThinkMode;
+            bool useAgentSkills = ConfigManager.EnableSkills;
+            string[] skillsFolders = ConfigManager.SkillsFolders;
 
             if (string.IsNullOrEmpty(apiKey) || string.IsNullOrEmpty(apiUrl) || string.IsNullOrEmpty(modelName))
             {
@@ -147,10 +105,10 @@ namespace XiaoYu_LAM.AgentEngine
                     };
                 }
 
-                if ((UseAgentSkills) || (SkillsFolders.Count() > 0)) // 使用技能
+                if ((ConfigManager.EnableSkills) || (ConfigManager.SkillsFolders.Count() > 0)) // 使用技能
                 {
                     Console.WriteLine("使用Skills");
-                    FileAgentSkillsProvider skillsProvider = new FileAgentSkillsProvider(skillPaths: SkillsFolders);
+                    FileAgentSkillsProvider skillsProvider = new FileAgentSkillsProvider(skillPaths: ConfigManager.SkillsFolders);
                     // 构建 MSAF AIAgent，并把 uiEngine 里的工具全塞进去
                     XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
                     {
@@ -461,14 +419,8 @@ namespace XiaoYu_LAM.AgentEngine
             {
                 var msgList = messages.ToList();
 
-                // 动态读取主界面的 IsDeleteHistoryPic 状态，实现 Token 瘦身
-                bool isDeleteHistory = false;
                 var mf = Application.OpenForms.OfType<MainForm>().FirstOrDefault();
-                if (mf != null)
-                {
-                    var chk = mf.Controls.Find("IsDeleteHistoryPic", true).FirstOrDefault() as CheckBox;
-                    if (chk != null) isDeleteHistory = chk.Checked;
-                }
+                bool isDeleteHistory = ConfigManager.IsDeleteHistoryPic;
 
                 if (isDeleteHistory)
                 {

@@ -18,16 +18,12 @@ namespace XiaoYu_LAM
     public partial class ChatForm : Form
     {
         private MainForm _mainForm;
-        private mainEngine _uiaEngine;
-        private MSAFEngine _msafEngine;
-        private AgentSession _currentSession;
-        private CancellationTokenSource _cts;
+        private AgentRunner _runner; // 唯一需要的核心引擎句柄
 
         private string _sessionDirectory;
 
         // 用于管理流式输出状态
         private bool _isAiTyping = false;
-        // 记录当前会话的文件名
         private string _currentFileName = "";
 
         // 流式输出缓冲区
@@ -39,40 +35,83 @@ namespace XiaoYu_LAM
         {
             InitializeComponent();
             _mainForm = mainForm;
-            _uiaEngine = new mainEngine();
-            _msafEngine = new MSAFEngine();
 
             _sessionDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MarkDown", "conversation");
             if (!Directory.Exists(_sessionDirectory)) Directory.CreateDirectory(_sessionDirectory);
 
-            // 监听底层产生的截图
-            _uiaEngine.OnScanCompleted += OnImageScanned;
+            // 实例化执行器（它内部会自动 new MSAFEngine 和 UIAEngine 并完成配置）
+            _runner = new AgentRunner();
+
+            // 绑定事件：文本输出
+            _runner.OnStreamText += txt => AppendStreamText(txt);
+
+            // 绑定事件：工具调用开始
+            _runner.OnToolCall += tool => {
+                if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
+                if (!ConfigManager.IsHideUIAoutInChatForm) AppendLog("System", $"🔄 正在调用工具: {tool}...");
+            };
+
+            // 绑定事件：工具调用结果
+            _runner.OnToolResult += (tool, res) => {
+                if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
+                if (!ConfigManager.IsHideUIAoutInChatForm) AppendLog("ToolResult", $"[{tool}] 结果: \n{res}");
+            };
+
+            // 绑定事件：系统日志
+            _runner.OnLog += AppendLog;
+
+            // 绑定事件：底层截图产生
+            _runner.OnImageScanned += HandleScannedImage;
+        }
+
+        private void HandleScannedImage(Bitmap drawnBmp, Bitmap origBmp)
+        {
+            // MainForm 的更新
+            _mainForm.UpdateVisionImage(drawnBmp);
+
+            // 2. 如果没有勾选“免打扰”，就显示在聊天框里
+            if (!ConfigManager.IsHideUIAoutInChatForm)
+            {
+                // 必须克隆一份，因为原始的 drawnBmp 会在 AgentRunner 的事件流结束后被释放
+                Bitmap uiBmp = new Bitmap(drawnBmp);
+
+                try
+                {
+                    // 使用 Invoke (同步调用) 确保 UI 粘贴完图片之前，uiBmp 不会被 Dispose
+                    this.Invoke(new Action(() =>
+                    {
+                        AppendImageToUI(uiBmp);
+                    }));
+                }
+                finally
+                {
+                    // 粘贴完了，立刻回收 UI 线程用的这张大图
+                    uiBmp.Dispose();
+                    uiBmp = null;
+                }
+            }
         }
 
         private void ChatForm_Load(object sender, EventArgs e)
         {
             btnStop.Enabled = false;
-            _msafEngine.CreateAgent(_uiaEngine);
             LoadSessionList();
 
-            // 初始化时选中第一个（新建会话）
             if (comboBox1.Items.Count > 0)
             {
                 comboBox1.SelectedIndex = 0;
             }
 
-            this.FormClosing += ChatForm_FormClosing; // 注册关闭事件
+            this.FormClosing += ChatForm_FormClosing;
 
-            //初始化 UI 刷新定时器
             _uiRefreshTimer = new System.Windows.Forms.Timer();
-            _uiRefreshTimer.Interval = 500; //500ms 刷新一次
+            _uiRefreshTimer.Interval = 500;
             _uiRefreshTimer.Tick += UiRefreshTimer_Tick;
             _uiRefreshTimer.Start();
         }
 
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            // 停止定时器，防止它继续访问已销毁的控件
             if (_uiRefreshTimer != null)
             {
                 _uiRefreshTimer.Stop();
@@ -80,38 +119,16 @@ namespace XiaoYu_LAM
                 _uiRefreshTimer = null;
             }
 
-            // 停止正在进行的任务
-            if (_cts != null)
+            // 统一销毁 Runner，它内部会处理取消任务和释放资源
+            if (_runner != null)
             {
-                _cts.Cancel();
-                _cts.Dispose();
+                _runner.Dispose();
+                _runner = null;
             }
 
-            // 销毁 UI 引擎 (释放 FlaUI 的 COM 对象)
-            if (_uiaEngine != null)
-            {
-                _uiaEngine.OnScanCompleted -= OnImageScanned; // 解绑事件
-                _uiaEngine.Dispose();
-                _uiaEngine = null;
-            }
-
-            // 清空图片暂存
-            if (_msafEngine != null)
-            {
-                if (_msafEngine.PendingImage != null)
-                {
-                    _msafEngine.PendingImage.Dispose();
-                }
-                _msafEngine = null;
-            }
-
-
-            // 清空 RichTextBox，解除对图片的引用
             ConversationRichTextBox.Clear();
             ConversationRichTextBox.Dispose();
 
-
-            // 强制 GC
             GC.Collect();
             GC.WaitForPendingFinalizers();
             GC.Collect();
@@ -284,33 +301,6 @@ namespace XiaoYu_LAM
             SendMessage(ConversationRichTextBox.Handle, EM_EMPTYUNDOBUFFER, 0, IntPtr.Zero);
         }
 
-        // 当扫描工具执行完，底层产生图片时的处理
-        private void OnImageScanned(Bitmap drawnBmp, Bitmap originalBmp)
-        {
-            _mainForm.UpdateVisionImage(drawnBmp); //  MainForm 内部会自己 Clone 拷贝，不用管它
-
-            // 动态读取免打扰 CheckBox
-            bool isHideUIA = false;
-            var chk = _mainForm.Controls.Find("IsHideUIAoutInChatForm", true).FirstOrDefault() as CheckBox;
-            if (chk != null) isHideUIA = chk.Checked;
-            chk = null;
-
-            if (!isHideUIA)
-            {
-                // 单独给 UI 线程克隆一份，让 UI 线程用完后自己 Dispose
-                Bitmap uiBmp = new Bitmap(drawnBmp);
-                this.BeginInvoke(new Action(() => AppendImageToUI(uiBmp)));
-            }
-
-            // 给 MSAF 引擎克隆一份，引擎的 Middleware 注入完成后也会自己 Dispose
-            _msafEngine.PendingImage = new Bitmap(drawnBmp);
-
-            // 因为 mainEngine 在 ScanInternal 里 new 出了这两张图，触发事件后却忘了销毁它们。
-            // 我们作为事件的接收者，既然各个分支都已经 Copy 完了，必须在这里把源头掐死！
-            try { drawnBmp?.Dispose(); } catch { }
-            try { originalBmp?.Dispose(); } catch { }
-        }
-
         private void LoadSessionList()
         {
             comboBox1.Items.Clear();
@@ -334,8 +324,8 @@ namespace XiaoYu_LAM
         {
             if (comboBox1.SelectedIndex <= 0)
             {
-                _currentSession = null;
-                _currentFileName = ""; // 清空文件名标记
+                // 这里的清理可能需要扩展 Runner 的能力，如果是空会话，我们可以不操作，或者给 Runner 加个清空方法
+                _currentFileName = "";
                 ConversationRichTextBox.Clear();
             }
             else
@@ -345,8 +335,8 @@ namespace XiaoYu_LAM
                     _currentFileName = comboBox1.SelectedItem.ToString();
                     string filePath = Path.Combine(_sessionDirectory, _currentFileName);
 
-                    // 恢复底层的历史记忆
-                    _currentSession = await _msafEngine.RestoreSessionFromMarkdown(filePath);
+                    // 让 Runner 去恢复会话
+                    await _runner.RestoreSessionAsync(filePath);
 
                     // 恢复界面的可视聊天记录
                     string fileText = File.ReadAllText(filePath);
@@ -357,10 +347,6 @@ namespace XiaoYu_LAM
                     }
 
                     AppendLog("System", $"成功恢复会话: {_currentFileName}");
-
-                    filePath = null;
-                    fileText = null;
-                    match = null;
                 }
                 catch (Exception ex)
                 {
@@ -378,113 +364,41 @@ namespace XiaoYu_LAM
             btnExecute.Enabled = false;
             btnStop.Enabled = true;
             txtInput.Enabled = false;
-            _cts = new CancellationTokenSource();
 
             AppendLog("User", userInput);
-            txtInput.Clear(); // 发送后清空输入框
+            txtInput.Clear();
 
-            try
+            // 文件名生成逻辑不变
+            if (_runner.CurrentSession == null)
             {
-                // 如果是新会话，创建 Session 并生成文件名
-                if (_currentSession == null)
-                {
-                    _currentSession = await _msafEngine.XiaoYuAgent.CreateSessionAsync();
-
-                    // 提取用户第一句话作为文件名（去掉非法字符和换行，最长15字）
-                    string safeInput = string.Join("_", userInput.Split(Path.GetInvalidFileNameChars()));
-                    safeInput = safeInput.Replace("\r", "").Replace("\n", "").Replace(" ", "");
-                    string title = safeInput.Length > 15 ? safeInput.Substring(0, 15) : safeInput;
-
-                    _currentFileName = $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.md";
-
-                    safeInput = null;
-                    title = null;
-                }
-
-                var updates = _msafEngine.XiaoYuAgent.RunStreamingAsync(userInput, _currentSession, cancellationToken: _cts.Token);
-                string currentToolCall = "";
-                var enumerator = updates.GetAsyncEnumerator(_cts.Token);
-
-                bool isHideUIA = false;
-                var chk = _mainForm.Controls.Find("IsHideUIAoutInChatForm", true).FirstOrDefault() as CheckBox;
-                if (chk != null) isHideUIA = chk.Checked;
-
-                try
-                {
-                    while (await enumerator.MoveNextAsync())
-                    {
-                        var update = enumerator.Current;
-                        foreach (var content in update.Contents)
-                        {
-                            if (content is TextContent textContent && !string.IsNullOrEmpty(textContent.Text))
-                            {
-                                AppendStreamText(textContent.Text);
-                            }
-                            else if (content is FunctionCallContent functionCall)
-                            {
-                                if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
-                                currentToolCall = functionCall.Name;
-                                if (!isHideUIA) AppendLog("System", $"🔄 正在调用工具: {functionCall.Name}...");
-                            }
-                            else if (content is FunctionResultContent functionResult)
-                            {
-                                if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
-                                if (!isHideUIA) AppendLog("ToolResult", $"[{currentToolCall}] 结果: \n{functionResult.Result}");
-                            }
-                        }
-
-                        update = null;
-                    }
-                }
-                finally
-                {
-                    if (enumerator != null) await enumerator.DisposeAsync();
-                    if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
-                    updates = null;
-                    currentToolCall = null;
-                    enumerator = null;
-                    chk = null;
-
-                }
-
-                // 后台静默保存，不刷新 ComboBox，防止触发事件清空屏幕
-                if (!string.IsNullOrEmpty(_currentFileName))
-                {
-                    string filePath = Path.Combine(_sessionDirectory, _currentFileName);
-                    await _msafEngine.BackupSessionToMarkdown(_currentSession, filePath, ConversationRichTextBox.Text);
-                    filePath = null;
-                }
+                string safeInput = string.Join("_", userInput.Split(Path.GetInvalidFileNameChars())).Replace("\r", "").Replace("\n", "").Replace(" ", "");
+                string title = safeInput.Length > 15 ? safeInput.Substring(0, 15) : safeInput;
+                _currentFileName = $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.md";
             }
-            catch (TaskCanceledException)
+
+            // 调用 Runner
+            await _runner.RunTaskAsync(userInput);
+
+            // 备份历史
+            if (!string.IsNullOrEmpty(_currentFileName))
             {
-                AppendLog("System", "任务已被手动终止。");
-
+                string filePath = Path.Combine(_sessionDirectory, _currentFileName);
+                await _runner.BackupSessionAsync(filePath, ConversationRichTextBox.Text);
             }
-            catch (Exception ex)
-            {
-                AppendLog("Error", ex.Message);
 
-            }
-            finally
-            {
-                btnExecute.Enabled = true;
-                btnStop.Enabled = false;
-                txtInput.Enabled = true;
-                toolStripLabel1.Text = "任务执行完毕";
-                _cts?.Dispose();
-                _cts = null;
-
-                userInput = null;
-
-            }
+            btnExecute.Enabled = true;
+            btnStop.Enabled = false;
+            txtInput.Enabled = true;
+            toolStripLabel1.Text = "任务执行完毕";
         }
 
         private void btnStop_Click(object sender, EventArgs e)
         {
-            _cts?.Cancel();
+            _runner.CancelTask();
             btnStop.Enabled = false;
             toolStripLabel1.Text = "任务已终止";
         }
+
 
 
         [System.Runtime.InteropServices.DllImport("user32.dll")]

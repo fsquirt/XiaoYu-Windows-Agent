@@ -30,23 +30,6 @@ namespace XiaoYu_LAM
             InitializeComponent();
         }
 
-        // 检查启动的时候是否带有 --task 参数，如果有自动开始LLM执行任务
-        public void CheckArgTask()
-        {
-            if (Environment.GetCommandLineArgs().Contains("--task"))
-            {
-                // 输出参数内容
-                string[] args = Environment.GetCommandLineArgs();
-                MessageBox.Show("自动执行LLM任务:" + args[2], "启动参数", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-                // 直接启动主窗口并隐藏当前向导
-                var main = new MainForm();
-                main.FormClosed += (s, ev) => this.Close();
-                main.Show();
-                this.Hide();
-            }
-        }
-
         private void WelcomeForm_Load(object sender, EventArgs e)
         {
             // 检测是否在管理员权限下运行
@@ -134,11 +117,6 @@ namespace XiaoYu_LAM
             catch
             {
                 toolStripStatusLabel1.Text = "就绪";
-            }
-
-            if (IsConfigValid)
-            {
-                CheckArgTask(); //如果配置有效，检查是否带有任务参数，有的话直接执行任务
             }
 
         }
@@ -232,64 +210,12 @@ namespace XiaoYu_LAM
         {
             try
             {
-                string apiUrl = (textBox1.Text ?? string.Empty).Trim();
-                string apiKey = (textBox2.Text ?? string.Empty).Trim();
-                string modelName = (textBox3.Text ?? string.Empty).Trim();
-                string protocol = checkBox1.Checked ? "OpenAI" : (checkBox2.Checked ? "Anthropic" : "Unknown");
-                string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
+                AgentEngine.ConfigManager.ApiUrl = (textBox1.Text ?? string.Empty).Trim();
+                AgentEngine.ConfigManager.ApiKey = (textBox2.Text ?? string.Empty).Trim();
+                AgentEngine.ConfigManager.ModelName = (textBox3.Text ?? string.Empty).Trim();
+                AgentEngine.ConfigManager.Protocol = checkBox1.Checked ? "OpenAI" : (checkBox2.Checked ? "Anthropic" : "Unknown");
 
-                System.Collections.Generic.List<string> skillsSection = new System.Collections.Generic.List<string>();
-                if (System.IO.File.Exists(path))
-                {
-                    var oldLines = System.IO.File.ReadAllLines(path, System.Text.Encoding.UTF8);
-                    bool inSkills = false;
-                    foreach (var line in oldLines)
-                    {
-                        string trimmedLine = line.Trim();
-                        // 发现 [SKILLS] 节开始
-                        if (trimmedLine.Equals("[SKILLS]", StringComparison.OrdinalIgnoreCase))
-                        {
-                            inSkills = true;
-                        }
-                        // 如果已经在 SKILLS 节中，且碰到了下一个 [ 节标志，则停止记录
-                        else if (inSkills && trimmedLine.StartsWith("[") && trimmedLine.EndsWith("]"))
-                        {
-                            inSkills = false;
-                        }
-
-                        if (inSkills)
-                        {
-                            skillsSection.Add(line);
-                        }
-                    }
-                }
-
-                // 重新构建文件内容
-                var newLines = new System.Collections.Generic.List<string>();
-
-                // 写入 [LLM_PROVIDER] 节
-                newLines.Add("[LLM_PROVIDER]");
-                newLines.Add("API_URL=" + apiUrl);
-                newLines.Add("API_KEY=" + apiKey);
-                newLines.Add("MODEL_NAME=" + modelName);
-                newLines.Add("PROTOCOL=" + protocol);
-                newLines.Add("");
-
-                // 将保留的 [SKILLS] 节写回
-                if (skillsSection.Count > 0)
-                {
-                    newLines.AddRange(skillsSection);
-                }
-                else
-                {
-                    // 如果原本没有 [SKILLS] 节，可以初始化一个空的（可选）
-                    newLines.Add("[SKILLS]");
-                    newLines.Add("ENABLE=False");
-                    newLines.Add("SKILLSPATH=");
-                }
-
-                // 写入文件
-                System.IO.File.WriteAllLines(path, newLines, System.Text.Encoding.UTF8);
+                AgentEngine.ConfigManager.SaveConfig();
 
                 var main = new MainForm();
                 main.FormClosed += (s, ev) => this.Close();
