@@ -26,6 +26,10 @@ namespace XiaoYu_LAM.AgentEngine
                 {
                     Console.WriteLine("权限不足，请以管理员身份运行程序");
                 }
+                catch (System.Runtime.InteropServices.COMException)
+                {
+                    //Console.WriteLine("文件夹已存在 无需再注册");
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"创建文件夹失败：{ex.Message}");
@@ -72,21 +76,67 @@ namespace XiaoYu_LAM.AgentEngine
             return TaskFolder;
         }
 
-        // 列出指定文件夹中的计划任务
-        public static void ListTaskFolderTasks(string folderPath = @"\XiaoYu_Agnet")
+        // 返回指定文件夹中的计划任务信息集合（任务名称、操作内容、创建时间、下一次执行时间）
+        public static List<TaskInfo> ListTaskFolderTasks(string folderPath = @"\XiaoYu_Agnet")
         {
+            var results = new List<TaskInfo>();
+
             using (var taskService = new TaskService())
             {
                 try
                 {
                     var folder = taskService.GetFolder(folderPath);
-                    Console.WriteLine($"文件夹 {folderPath} 中的计划任务：");
+
                     foreach (var task in folder.Tasks)
                     {
-                        Console.WriteLine(task.Name);
-                        Console.WriteLine($"  触发器：{string.Join(", ", task.Definition.Triggers.Select(t => t.TriggerType))}");
-                        Console.WriteLine($"  操作内容：{task.Definition.Actions.ToString()}");
-                        Console.WriteLine($"  状态：{task.State}");
+                        // 构建操作内容的可读描述（尽量提取 ExecAction 的 Path 和 Arguments）
+                        string actionsDescription = string.Join("; ", task.Definition.Actions.Select(a =>
+                        {
+                            try
+                            {
+                                var exec = a as ExecAction;
+                                if (exec != null)
+                                {
+                                    return $"Exec: Path={exec.Path}, Arguments={exec.Arguments}";
+                                }
+
+                                return a.ToString();
+                            }
+                            catch
+                            {
+                                return a.GetType().Name;
+                            }
+                        }));
+
+                        // 构建触发器描述
+                        string triggersDescription = string.Join("; ", task.Definition.Triggers.Select(t =>
+                        {
+                            try
+                            {
+                                var start = "";
+                                try { start = t.StartBoundary != DateTime.MinValue ? $", Start={t.StartBoundary}" : ""; } catch { }
+                                return $"{t.TriggerType}{start}";
+                            }
+                            catch
+                            {
+                                return t.GetType().Name;
+                            }
+                        }));
+
+                        string description = null;
+                        try { description = task.Definition?.RegistrationInfo?.Description; } catch { description = null; }
+
+                        DateTime? nextRun = null;
+                        try { nextRun = task.NextRunTime; } catch { nextRun = null; }
+
+                        results.Add(new TaskInfo
+                        {
+                            Name = task.Name,
+                            Triggers = triggersDescription,
+                            Description = description,
+                            Actions = actionsDescription,
+                            NextRunTime = nextRun
+                        });
                     }
                 }
                 catch (FileNotFoundException)
@@ -96,6 +146,30 @@ namespace XiaoYu_LAM.AgentEngine
                 catch (Exception ex)
                 {
                     Console.WriteLine($"列出任务失败：{ex.Message}");
+                }
+            }
+
+            return results;
+        }
+
+        // 删除计划任务
+        public static void DeleteTask(string taskName, string folderPath = @"\XiaoYu_Agnet")
+        {
+            using (var taskService = new TaskService())
+            {
+                try
+                {
+                    var folder = taskService.GetFolder(folderPath);
+                    folder.DeleteTask(taskName);
+                    Console.WriteLine($"计划任务 {taskName} 已删除");
+                }
+                catch (FileNotFoundException)
+                {
+                    Console.WriteLine("任务不存在");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"删除计划任务失败：{ex.Message}");
                 }
             }
         }
@@ -144,4 +218,15 @@ namespace XiaoYu_LAM.AgentEngine
             }
         }
     }
+
+    // 计划任务信息 DTO
+    internal class TaskInfo
+    {
+        public string Name { get; set; }
+        public string Triggers { get; set; }
+        public string Description { get; set; }
+        public string Actions { get; set; }
+        public DateTime? NextRunTime { get; set; }
+    }
+
 }

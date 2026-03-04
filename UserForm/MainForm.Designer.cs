@@ -60,12 +60,12 @@
             this.button3 = new System.Windows.Forms.Button();
             this.button2 = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
-            this.listView1 = new System.Windows.Forms.ListView();
-            this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader3 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader4 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.columnHeader5 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SchTaskListView = new System.Windows.Forms.ListView();
+            this.TaskName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskTrigger = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskDesc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskContext = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskNextTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.ChatListView = new System.Windows.Forms.ListView();
@@ -296,6 +296,7 @@
             this.tabControl1.SelectedIndex = 0;
             this.tabControl1.Size = new System.Drawing.Size(795, 416);
             this.tabControl1.TabIndex = 2;
+            this.tabControl1.SelectedIndexChanged += new System.EventHandler(this.tabControl1_SelectedIndexChanged);
             // 
             // tabPage1
             // 
@@ -376,7 +377,7 @@
             // 
             // tabPage3
             // 
-            this.tabPage3.Controls.Add(this.listView1);
+            this.tabPage3.Controls.Add(this.SchTaskListView);
             this.tabPage3.Location = new System.Drawing.Point(4, 25);
             this.tabPage3.Name = "tabPage3";
             this.tabPage3.Size = new System.Drawing.Size(787, 387);
@@ -384,49 +385,49 @@
             this.tabPage3.Text = "计划任务";
             this.tabPage3.UseVisualStyleBackColor = true;
             // 
-            // listView1
+            // SchTaskListView
             // 
-            this.listView1.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
-            this.columnHeader1,
-            this.columnHeader2,
-            this.columnHeader3,
-            this.columnHeader4,
-            this.columnHeader5});
-            this.listView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.listView1.FullRowSelect = true;
-            this.listView1.GridLines = true;
-            this.listView1.HideSelection = false;
-            this.listView1.Location = new System.Drawing.Point(0, 0);
-            this.listView1.Name = "listView1";
-            this.listView1.Size = new System.Drawing.Size(787, 387);
-            this.listView1.TabIndex = 0;
-            this.listView1.UseCompatibleStateImageBehavior = false;
-            this.listView1.View = System.Windows.Forms.View.Details;
+            this.SchTaskListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.TaskName,
+            this.TaskTrigger,
+            this.TaskDesc,
+            this.TaskContext,
+            this.TaskNextTime});
+            this.SchTaskListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.SchTaskListView.FullRowSelect = true;
+            this.SchTaskListView.GridLines = true;
+            this.SchTaskListView.HideSelection = false;
+            this.SchTaskListView.Location = new System.Drawing.Point(0, 0);
+            this.SchTaskListView.Name = "SchTaskListView";
+            this.SchTaskListView.Size = new System.Drawing.Size(787, 387);
+            this.SchTaskListView.TabIndex = 0;
+            this.SchTaskListView.UseCompatibleStateImageBehavior = false;
+            this.SchTaskListView.View = System.Windows.Forms.View.Details;
             // 
-            // columnHeader1
+            // TaskName
             // 
-            this.columnHeader1.Text = "任务ID";
-            this.columnHeader1.Width = 54;
+            this.TaskName.Text = "任务名称";
+            this.TaskName.Width = 100;
             // 
-            // columnHeader2
+            // TaskTrigger
             // 
-            this.columnHeader2.Text = "任务名称";
-            this.columnHeader2.Width = 138;
+            this.TaskTrigger.Text = "触发器";
+            this.TaskTrigger.Width = 138;
             // 
-            // columnHeader3
+            // TaskDesc
             // 
-            this.columnHeader3.Text = "下次执行时间";
-            this.columnHeader3.Width = 145;
+            this.TaskDesc.Text = "任务描述";
+            this.TaskDesc.Width = 145;
             // 
-            // columnHeader4
+            // TaskContext
             // 
-            this.columnHeader4.Text = "创建时间";
-            this.columnHeader4.Width = 143;
+            this.TaskContext.Text = "任务内容";
+            this.TaskContext.Width = 143;
             // 
-            // columnHeader5
+            // TaskNextTime
             // 
-            this.columnHeader5.Text = "执行内容";
-            this.columnHeader5.Width = 292;
+            this.TaskNextTime.Text = "下次执行时间";
+            this.TaskNextTime.Width = 292;
             // 
             // tabPage4
             // 
@@ -817,12 +818,12 @@
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button3;
         private System.Windows.Forms.Button button2;
-        private System.Windows.Forms.ListView listView1;
-        private System.Windows.Forms.ColumnHeader columnHeader1;
-        private System.Windows.Forms.ColumnHeader columnHeader2;
-        private System.Windows.Forms.ColumnHeader columnHeader3;
-        private System.Windows.Forms.ColumnHeader columnHeader4;
-        private System.Windows.Forms.ColumnHeader columnHeader5;
+        private System.Windows.Forms.ListView SchTaskListView;
+        private System.Windows.Forms.ColumnHeader TaskName;
+        private System.Windows.Forms.ColumnHeader TaskTrigger;
+        private System.Windows.Forms.ColumnHeader TaskDesc;
+        private System.Windows.Forms.ColumnHeader TaskContext;
+        private System.Windows.Forms.ColumnHeader TaskNextTime;
         private System.Windows.Forms.TabPage tabPage6;
         private System.Windows.Forms.TabPage tabPage7;
         private System.Windows.Forms.GroupBox groupBox2;

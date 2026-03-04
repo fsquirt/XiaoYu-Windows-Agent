@@ -10,7 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using Windows.Foundation.Metadata;
+using XiaoYu_LAM.AgentEngine;
 using XiaoYu_LAM.ToolForm;
 
 namespace XiaoYu_LAM
@@ -28,6 +28,7 @@ namespace XiaoYu_LAM
             // 初始化右键菜单
             InitContextMenu();
             InitSkillsContextMenu();
+            InitSchTaskContextMenu();
 
             Console.SetOut(new TextBoxWriter(this.LogrichTextBox1));
         }
@@ -250,12 +251,34 @@ namespace XiaoYu_LAM
             }
         }
 
+        private void LoadTaskSch()
+        {
+            TaskSchEngine.CreateTaskSchFolder();
+
+            // 清空现有列表项
+            SchTaskListView.Items.Clear();
+
+            foreach (TaskInfo task in TaskSchEngine.ListTaskFolderTasks())
+            {
+                // 将任务的五个字段添加为 ListViewItem 的列
+                var item = new ListViewItem(task.Name ?? string.Empty);
+                item.SubItems.Add(task.Triggers ?? string.Empty);
+                item.SubItems.Add(task.Description ?? string.Empty);
+                item.SubItems.Add(task.Actions ?? string.Empty);
+                item.SubItems.Add(task.NextRunTime?.ToString() ?? string.Empty);
+
+                SchTaskListView.Items.Add(item);
+
+                // 保留控制台输出以便调试
+                Console.WriteLine($"{task.Name} {task.Triggers} {task.Description} {task.Actions} {task.NextRunTime}");
+            }
+        }
+
         private void MainForm_Load(object sender, EventArgs e)
         {
             ChatListView.MultiSelect = true;
             LoadConfig();    // 加载配置文件
             LoadMarkdownFiles(); // 加载对话记录列表
-            
         }
 
         public void UpdateVisionImage(Bitmap bmp)
@@ -470,6 +493,51 @@ namespace XiaoYu_LAM
             };
             menu.Items.Add(deleteItem);
             SkillFolderlistView.ContextMenuStrip = menu;
+        }
+
+        // 计划任务列表右键菜单删除任务
+        private void InitSchTaskContextMenu()
+        {
+            ContextMenuStrip menu = new ContextMenuStrip();
+            ToolStripMenuItem deleteItem = new ToolStripMenuItem("删除选中任务");
+            deleteItem.Click += (s, e) => {
+                if (SchTaskListView.SelectedItems.Count == 0) return;
+
+                int count = SchTaskListView.SelectedItems.Count;
+                var result = MessageBox.Show($"确定要删除选中的 {count} 个计划任务吗？", "确认删除", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result != DialogResult.Yes) return;
+
+                // 先把选中的项拷贝到临时列表以避免枚举时修改集合
+                var selected = new List<ListViewItem>();
+                foreach (ListViewItem it in SchTaskListView.SelectedItems) selected.Add(it);
+
+                foreach (var it in selected)
+                {
+                    try
+                    {
+                        string taskName = it.Text;
+                        TaskSchEngine.DeleteTask(taskName);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show($"删除任务 {it.Text} 失败: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+
+                // 刷新列表
+                LoadTaskSch();
+            };
+
+            menu.Items.Add(deleteItem);
+            SchTaskListView.ContextMenuStrip = menu;
+        }
+
+        private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            if(tabControl1.SelectedTab.Text == "计划任务")
+            {
+                LoadTaskSch(); 
+            }
         }
     }
 }
