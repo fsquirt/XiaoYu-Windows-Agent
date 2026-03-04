@@ -41,6 +41,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
+    <UseWinFormsOutOfProcDesigner>True</UseWinFormsOutOfProcDesigner>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -50,6 +51,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseWinFormsOutOfProcDesigner>True</UseWinFormsOutOfProcDesigner>
   </PropertyGroup>
   <PropertyGroup>
     <StartupObject />
@@ -78,6 +80,7 @@
     <LangVersion>10.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseWinFormsOutOfProcDesigner>false</UseWinFormsOutOfProcDesigner>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
     <OutputPath>bin\x64\Release\</OutputPath>
@@ -85,9 +88,10 @@
     <Optimize>true</Optimize>
     <DebugType>pdbonly</DebugType>
     <PlatformTarget>x64</PlatformTarget>
-    <LangVersion>7.3</LangVersion>
+    <LangVersion>10.0</LangVersion>
     <ErrorReport>prompt</ErrorReport>
     <Prefer32Bit>true</Prefer32Bit>
+    <UseWinFormsOutOfProcDesigner>false</UseWinFormsOutOfProcDesigner>
   </PropertyGroup>
   <PropertyGroup />
   <PropertyGroup>
@@ -244,9 +248,13 @@
     <Reference Include="UIAutomationClient" />
     <Reference Include="UIAutomationProvider" />
     <Reference Include="UIAutomationTypes" />
+    <Reference Include="Windows">
+      <HintPath>..\..\..\..\..\Program Files (x86)\Windows Kits\10\UnionMetadata\10.0.26100.0\Windows.winmd</HintPath>
+    </Reference>
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AgentEngine\MemoryManager.cs" />
     <Compile Include="AgentEngine\MSAFEngine.cs" />
     <Compile Include="AgentEngine\TaskSchEngine.cs" />
     <Compile Include="AgentEngine\AgentRunner.cs" />
@@ -329,6 +337,7 @@
     <None Include="MarkDown\SystemPrompt.md">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="README.md" />
     <None Include="XiaoYu_LAM_TemporaryKey.pfx" />
   </ItemGroup>
   <ItemGroup>

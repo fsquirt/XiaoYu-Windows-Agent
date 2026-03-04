@@ -7,11 +7,11 @@ using System.Runtime.InteropServices;
 // 控制。更改这些特性值可修改
 // 与程序集关联的信息。
 [assembly: AssemblyTitle("晓予")]
-[assembly: AssemblyDescription("Windows自动化Agent")]
+[assembly: AssemblyDescription("Windows Legacy Copilot")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("https://github.com/fsquirt")]
-[assembly: AssemblyProduct("")]
-[assembly: AssemblyCopyright("The GNU General Pubilc License v3.0")]
+[assembly: AssemblyProduct("通过Windows无障碍接口让LLM操作你的Windows")]
+[assembly: AssemblyCopyright("Do What the F**k You Want To Public License")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 

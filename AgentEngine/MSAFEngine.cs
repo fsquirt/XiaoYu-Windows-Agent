@@ -27,11 +27,18 @@ namespace XiaoYu_LAM.AgentEngine
 {
     public class MSAFEngine
     {
+        // 在 MSAFEngine 类内部添加事件和属性
+        public event Action<string> OnToolCall;
+        public event Action<string, string> OnToolResult;
+        public IChatClient RawChatClient { get; private set; } // 用于给反思Agent使用
 
         public AIAgent XiaoYuAgent { get; private set; }
 
         // 暂存由底层扫描触发的图片，等待 Middleware 注入给 LLM
         public Bitmap PendingImage { get; set; }
+
+        // 专门用于后台反思总结的纯净客户端
+        public IChatClient ReflectionChatClient { get; private set; }
 
         public void CreateAgent(UIAEngine.mainEngine uiEngine)
         {
@@ -76,8 +83,15 @@ namespace XiaoYu_LAM.AgentEngine
                 }
 
                 OpenAI.Chat.ChatClient rawClient = new OpenAIClient(new ApiKeyCredential(apiKey), options).GetChatClient(modelName);
-                // 将其转为 MSAF 标准的 IChatClient，并挂载图片注入中间件
                 IChatClient meaiClient = new ImageInjectingChatClient(rawClient.AsIChatClient(), this);
+
+                // 创建一个干净的、不带深度思考拦截器的 Client 专门用于后台总结 (RunAsync)
+                OpenAIClientOptions plainOptions = new OpenAIClientOptions() { Endpoint = new Uri(apiUrl) };
+                OpenAI.Chat.ChatClient plainClient = new OpenAIClient(new ApiKeyCredential(apiKey), plainOptions).GetChatClient(modelName);
+                ReflectionChatClient = plainClient.AsIChatClient();
+
+                // 挂载 Provider (记忆 + Skills)
+                var providers = new List<AIContextProvider> { MemoryManager.CreateContextProvider() };
 
 #pragma warning disable MAAI001 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
                 ChatOptions chatOptions = new ChatOptions();
@@ -108,13 +122,13 @@ namespace XiaoYu_LAM.AgentEngine
                 if ((ConfigManager.EnableSkills) || (ConfigManager.SkillsFolders.Count() > 0)) // 使用技能
                 {
                     Console.WriteLine("使用Skills");
-                    FileAgentSkillsProvider skillsProvider = new FileAgentSkillsProvider(skillPaths: ConfigManager.SkillsFolders);
+                    providers.Add(new FileAgentSkillsProvider(skillPaths: skillsFolders));
                     // 构建 MSAF AIAgent，并把 uiEngine 里的工具全塞进去
                     XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
                     {
                         Name = "晓予",
                         ChatOptions = chatOptions,
-                        AIContextProviders = new List<AIContextProvider> { skillsProvider }
+                        AIContextProviders = providers
                     });
                 }
                 else
@@ -122,7 +136,8 @@ namespace XiaoYu_LAM.AgentEngine
                     XiaoYuAgent = meaiClient.AsAIAgent(new ChatClientAgentOptions()
                     {
                         Name = "晓予",
-                        ChatOptions = chatOptions
+                        ChatOptions = chatOptions,
+                        AIContextProviders = providers
                     });
                 }
             }
@@ -145,36 +160,6 @@ namespace XiaoYu_LAM.AgentEngine
                     }
                 });
             }
-        }
-
-        //中间件拦截对话流，将暂存的图片作为最新的视觉上下文注入给大模型
-        private async Task<ChatResponse> ImageInjectingMiddleware(IEnumerable<ChatMessage> messages, ChatOptions options, IChatClient innerChatClient, CancellationToken cancellationToken)
-        {
-            var msgList = messages.ToList();
-
-            if (PendingImage != null)
-            {
-                using (MemoryStream ms = new MemoryStream())
-                {
-                    PendingImage.Save(ms, ImageFormat.Jpeg);
-                    byte[] imgBytes = ms.ToArray();
-
-                    // 创建一个包含文字和图片的多模态 User 消息
-                    var contents = new List<AIContent>
-                    {
-                        new TextContent("【系统自动注入】这是最新扫描的界面截图，请结合此图的编号与刚才工具返回的列表信息，进行下一步操作："),
-                        new DataContent(imgBytes, "image/jpeg")
-                    };
-
-                    msgList.Add(new ChatMessage(ChatRole.User, contents));
-                }
-
-                PendingImage.Dispose();
-                PendingImage = null; // 注入完毕，清空暂存
-            }
-
-            // 放行给底层 LLM 请求
-            return await innerChatClient.GetResponseAsync(msgList, options, cancellationToken);
         }
 
         // 将会话输出到MarkDown文件，把人类可读的对话记录也存入 Markdown

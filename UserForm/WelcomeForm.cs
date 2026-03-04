@@ -32,53 +32,6 @@ namespace XiaoYu_LAM
 
         private void WelcomeForm_Load(object sender, EventArgs e)
         {
-            // 检测是否在管理员权限下运行
-            bool isAdmin = false;
-            try
-            {
-                using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
-                {
-                    WindowsPrincipal principal = new WindowsPrincipal(identity);
-                    isAdmin = principal.IsInRole(WindowsBuiltInRole.Administrator);
-                }
-            }
-            catch
-            {
-                isAdmin = false;
-            }
-
-            if (!isAdmin)
-            {
-                var result = MessageBox.Show("晓予未以管理员权限运行，晓予将无法操作管理员身份运行的进程窗口。是否以管理员身份重新启动？", "权限不足", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
-                if (result == DialogResult.Yes)
-                {
-                    try
-                    {
-                        var psi = new System.Diagnostics.ProcessStartInfo
-                        {
-                            FileName = Application.ExecutablePath,
-                            UseShellExecute = true,
-                            Verb = "runas"
-                        };
-                        System.Diagnostics.Process.Start(psi);
-                        Application.Exit();
-                        return;
-                    }
-                    catch (Exception)
-                    {
-                        MessageBox.Show("无法以管理员权限重新启动晓予，请确认当前Windows用户权限", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
-                }
-                else
-                {
-                    this.Text = this.Text + "（非管理员权限）";
-                }
-            }
-            else
-            {
-                this.Text = this.Text + "（管理员权限）";
-            }
-
             try
             {
                 string path = System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");

@@ -203,6 +203,7 @@ namespace XiaoYu_LAM.AgentEngine
                         return "传入了未知Frequency参数 只能传入Once或者Daily Once代表只执行一次 Daily代表每天执行";
                     }
 
+                    taskDefinition.Principal.RunLevel = TaskRunLevel.Highest; // 以管理员权限运行
                     taskDefinition.Actions.Add(new ExecAction(Application.ExecutablePath, arguments, Environment.CurrentDirectory));
                     folder.RegisterTaskDefinition(taskName, taskDefinition);
                     Console.WriteLine($"计划任务 {taskName} 创建成功");

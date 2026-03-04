@@ -60,24 +60,25 @@
             this.button2 = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.SchTaskListView = new System.Windows.Forms.ListView();
-            this.TaskName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TaskTrigger = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TaskDesc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TaskContext = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.TaskNextTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskName = new System.Windows.Forms.ColumnHeader();
+            this.TaskTrigger = new System.Windows.Forms.ColumnHeader();
+            this.TaskDesc = new System.Windows.Forms.ColumnHeader();
+            this.TaskContext = new System.Windows.Forms.ColumnHeader();
+            this.TaskNextTime = new System.Windows.Forms.ColumnHeader();
             this.tabPage4 = new System.Windows.Forms.TabPage();
+            this.MemoryListView = new System.Windows.Forms.ListView();
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.ChatListView = new System.Windows.Forms.ListView();
-            this.ChatTitle = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.ChatCreateTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
-            this.ChatMarkDownFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ChatTitle = new System.Windows.Forms.ColumnHeader();
+            this.ChatCreateTime = new System.Windows.Forms.ColumnHeader();
+            this.ChatMarkDownFile = new System.Windows.Forms.ColumnHeader();
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.button7 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.SkillFolderlistView = new System.Windows.Forms.ListView();
-            this.SkillsFolderPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.SkillsFolderPath = new System.Windows.Forms.ColumnHeader();
             this.AddSkillsPathButton = new System.Windows.Forms.Button();
             this.IsUseAgentSkills = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -96,6 +97,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.ExpMemory = new System.Windows.Forms.ColumnHeader();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -104,6 +106,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
             this.groupBox1.SuspendLayout();
             this.tabPage3.SuspendLayout();
+            this.tabPage4.SuspendLayout();
             this.tabPage6.SuspendLayout();
             this.tabPage7.SuspendLayout();
             this.groupBox4.SuspendLayout();
@@ -180,12 +183,14 @@
             this.保存日志ToolStripMenuItem.Name = "保存日志ToolStripMenuItem";
             this.保存日志ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.保存日志ToolStripMenuItem.Text = "保存日志";
+            this.保存日志ToolStripMenuItem.Click += new System.EventHandler(this.保存日志ToolStripMenuItem_Click);
             // 
             // 退出ToolStripMenuItem
             // 
             this.退出ToolStripMenuItem.Name = "退出ToolStripMenuItem";
             this.退出ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.退出ToolStripMenuItem.Text = "退出";
+            this.退出ToolStripMenuItem.Click += new System.EventHandler(this.退出ToolStripMenuItem_Click);
             // 
             // 选项OToolStripMenuItem
             // 
@@ -307,7 +312,7 @@
             // 
             this.LogrichTextBox1.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.LogrichTextBox1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.LogrichTextBox1.Font = new System.Drawing.Font("Consolas", 8.5F);
+            this.LogrichTextBox1.Font = new System.Drawing.Font("微软雅黑", 8.5F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
             this.LogrichTextBox1.Location = new System.Drawing.Point(3, 3);
             this.LogrichTextBox1.Name = "LogrichTextBox1";
             this.LogrichTextBox1.Size = new System.Drawing.Size(781, 381);
@@ -328,7 +333,6 @@
             // 
             // pictureBox1
             // 
-            this.pictureBox1.Cursor = System.Windows.Forms.Cursors.Default;
             this.pictureBox1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.pictureBox1.Location = new System.Drawing.Point(3, 3);
             this.pictureBox1.Name = "pictureBox1";
@@ -424,12 +428,27 @@
             // 
             // tabPage4
             // 
+            this.tabPage4.Controls.Add(this.MemoryListView);
             this.tabPage4.Location = new System.Drawing.Point(4, 25);
             this.tabPage4.Name = "tabPage4";
             this.tabPage4.Size = new System.Drawing.Size(787, 387);
             this.tabPage4.TabIndex = 3;
             this.tabPage4.Text = "记忆";
             this.tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // MemoryListView
+            // 
+            this.MemoryListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
+            this.ExpMemory});
+            this.MemoryListView.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.MemoryListView.FullRowSelect = true;
+            this.MemoryListView.GridLines = true;
+            this.MemoryListView.Location = new System.Drawing.Point(0, 0);
+            this.MemoryListView.Name = "MemoryListView";
+            this.MemoryListView.Size = new System.Drawing.Size(787, 387);
+            this.MemoryListView.TabIndex = 0;
+            this.MemoryListView.UseCompatibleStateImageBehavior = false;
+            this.MemoryListView.View = System.Windows.Forms.View.Details;
             // 
             // tabPage6
             // 
@@ -744,6 +763,10 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
             // 
+            // ExpMemory
+            // 
+            this.ExpMemory.Text = "记忆内容";
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -767,6 +790,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
             this.groupBox1.ResumeLayout(false);
             this.tabPage3.ResumeLayout(false);
+            this.tabPage4.ResumeLayout(false);
             this.tabPage6.ResumeLayout(false);
             this.tabPage7.ResumeLayout(false);
             this.groupBox4.ResumeLayout(false);
@@ -849,5 +873,7 @@
         private System.Windows.Forms.ListView SkillFolderlistView;
         private System.Windows.Forms.ColumnHeader SkillsFolderPath;
         private System.Windows.Forms.Button button7;
+        private System.Windows.Forms.ListView MemoryListView;
+        private System.Windows.Forms.ColumnHeader ExpMemory;
     }
 }

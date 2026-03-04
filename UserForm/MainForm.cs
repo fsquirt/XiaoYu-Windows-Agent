@@ -7,12 +7,13 @@ using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
 using System.Linq;
+using System.Security.Principal;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using XiaoYu_LAM.AgentEngine;
-using XiaoYu_LAM.UIAEngine;
 using XiaoYu_LAM.ToolForm;
+using XiaoYu_LAM.UIAEngine;
 
 namespace XiaoYu_LAM
 {
@@ -25,8 +26,13 @@ namespace XiaoYu_LAM
             InitializeComponent();
             this.Load += MainForm_Load;
             InitContextMenu();
+
+            // 初始化右键菜单
             InitSkillsContextMenu();
             InitSchTaskContextMenu();
+            InitMemoryContextMenu();
+
+            // Console.Write重定向
             Console.SetOut(new TextBoxWriter(this.LogrichTextBox1));
 
             // 启动 IPC 监听
@@ -38,6 +44,13 @@ namespace XiaoYu_LAM
                 // 延迟执行确保 UI 加载完毕
                 _ = Task.Delay(1000).ContinueWith(_ => HandleIncomingTask(initialTask));
             }
+
+            // 读取硬盘上的记忆并显示
+            MemoryManager.LoadMemories();
+            RefreshMemoryListView();
+
+            // 订阅数据变化事件，当后台有新总结的记忆或删除了记忆时，自动刷新 UI
+            MemoryManager.OnMemoriesChanged += RefreshMemoryListView;
         }
 
         public string MODEL_NAME = "";
@@ -248,7 +261,7 @@ namespace XiaoYu_LAM
             // 清空现有列表项
             SchTaskListView.Items.Clear();
 
-            Console.WriteLine("当前共有" + TaskSchEngine.ListTaskFolderTasks().Count + "个计划任务。");
+            // Console.WriteLine("当前共有" + TaskSchEngine.ListTaskFolderTasks().Count + "个计划任务。");
 
             foreach (TaskInfo task in TaskSchEngine.ListTaskFolderTasks())
             {
@@ -262,7 +275,7 @@ namespace XiaoYu_LAM
                 SchTaskListView.Items.Add(item);
 
                 // 保留控制台输出以便调试
-                Console.WriteLine($"{task.Name} {task.Triggers} {task.Description} {task.Actions} {task.NextRunTime}");
+                // Console.WriteLine($"{task.Name} {task.Triggers} {task.Description} {task.Actions} {task.NextRunTime}");
             }
         }
 
@@ -271,6 +284,8 @@ namespace XiaoYu_LAM
             ChatListView.MultiSelect = true;
             LoadConfig();    // 加载配置文件
             LoadMarkdownFiles(); // 加载对话记录列表
+
+            MemoryListView.Columns[0].Width = -2;
         }
 
         public void UpdateVisionImage(Bitmap bmp)
@@ -627,6 +642,96 @@ namespace XiaoYu_LAM
         {
             ConfigManager.IsHideUIAoutInChatForm = IsHideUIAoutInChatForm.Checked;
             ConfigManager.SaveConfig();
+        }
+
+        private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Environment.Exit(0);
+        }
+
+        private void 保存日志ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // 弹出保存文件对话框并将 LogrichTextBox1 的内容保存为文本文件
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "文本文件|*.txt|所有文件|*.*";
+            saveFileDialog.RestoreDirectory = true;
+            saveFileDialog.FileName = "log.txt";
+
+            if (saveFileDialog.ShowDialog() != DialogResult.OK)
+                return;
+
+            try
+            {
+                string path = saveFileDialog.FileName;
+                // 使用 UTF-8 编码保存文件
+                File.WriteAllText(path, LogrichTextBox1.Text ?? string.Empty, Encoding.UTF8);
+                MessageBox.Show($"日志已保存到: {path}", "保存成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"保存日志时发生错误: {ex.Message}", "保存失败", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void RefreshMemoryListView()
+        {
+            if (this.InvokeRequired)
+            {
+                this.BeginInvoke(new Action(RefreshMemoryListView));
+                return;
+            }
+
+            MemoryListView.Items.Clear();
+            foreach (var mem in MemoryManager.Memories)
+            {
+                MemoryListView.Items.Add(new ListViewItem(mem));
+            }
+        }
+
+        private void InitMemoryContextMenu()
+        {
+            ContextMenuStrip memoryMenu = new ContextMenuStrip();
+
+            ToolStripMenuItem deleteItem = new ToolStripMenuItem("删除选中记忆");
+            deleteItem.Click += (s, e) =>
+            {
+                // 如果没有选中任何项，直接返回
+                if (MemoryListView.SelectedItems.Count == 0) return;
+
+                // 询问用户是否确定删除
+                var result = MessageBox.Show(
+                    $"确定要删除选中的 {MemoryListView.SelectedItems.Count} 条记忆吗？\n删除后 AI 将不再参考这些经验。",
+                    "确认删除",
+                    MessageBoxButtons.YesNo,
+                    MessageBoxIcon.Warning);
+
+                if (result == DialogResult.Yes)
+                {
+                    // 收集所有需要删除的文本
+                    var itemsToDelete = new List<string>();
+                    foreach (ListViewItem item in MemoryListView.SelectedItems)
+                    {
+                        itemsToDelete.Add(item.Text);
+                    }
+
+                    // 从管理器中逐个删除
+                    foreach (string text in itemsToDelete)
+                    {
+                        MemoryManager.RemoveMemory(text);
+                    }
+
+                    // RemoveMemory 内部调用了 SaveMemories，它会触发 OnMemoriesChanged，进而调用 RefreshMemoryListView，所以不需要在这里手动操作 UI 元素。
+                }
+            };
+
+            memoryMenu.Items.Add(deleteItem);
+
+            // 将菜单绑定到 ListView
+            MemoryListView.ContextMenuStrip = memoryMenu;
+
+            // 让 ListView 支持多选，方便批量删除
+            MemoryListView.MultiSelect = true;
+            MemoryListView.FullRowSelect = true;
         }
     }
 }

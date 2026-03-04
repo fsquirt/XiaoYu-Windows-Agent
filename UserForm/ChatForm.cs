@@ -18,18 +18,10 @@ namespace XiaoYu_LAM
     public partial class ChatForm : Form
     {
         private MainForm _mainForm;
-        private AgentRunner _runner; // 唯一需要的核心引擎句柄
-
+        private AgentRunner _runner;
         private string _sessionDirectory;
-
-        // 用于管理流式输出状态
-        private bool _isAiTyping = false;
         private string _currentFileName = "";
-
-        // 流式输出缓冲区
-        private StringBuilder _streamBuffer = new StringBuilder();
-        private System.Windows.Forms.Timer _uiRefreshTimer;
-        private object _bufferLock = new object();
+        private bool _isAiTyping = false;
 
         public ChatForm(MainForm mainForm)
         {
@@ -39,28 +31,24 @@ namespace XiaoYu_LAM
             _sessionDirectory = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "MarkDown", "conversation");
             if (!Directory.Exists(_sessionDirectory)) Directory.CreateDirectory(_sessionDirectory);
 
-            // 实例化执行器（它内部会自动 new MSAFEngine 和 UIAEngine 并完成配置）
             _runner = new AgentRunner();
 
-            // 绑定事件：文本输出
-            _runner.OnStreamText += txt => AppendStreamText(txt);
+            // 流式文本极速追加
+            _runner.OnStreamText += AppendStreamText;
 
-            // 绑定事件：工具调用开始
+            // 工具调用显示
             _runner.OnToolCall += tool => {
                 if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
                 if (!ConfigManager.IsHideUIAoutInChatForm) AppendLog("System", $"🔄 正在调用工具: {tool}...");
             };
 
-            // 绑定事件：工具调用结果
+            // 工具结果显示
             _runner.OnToolResult += (tool, res) => {
                 if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
                 if (!ConfigManager.IsHideUIAoutInChatForm) AppendLog("ToolResult", $"[{tool}] 结果: \n{res}");
             };
 
-            // 绑定事件：系统日志
             _runner.OnLog += AppendLog;
-
-            // 绑定事件：底层截图产生
             _runner.OnImageScanned += HandleScannedImage;
         }
 
@@ -103,104 +91,61 @@ namespace XiaoYu_LAM
             }
 
             this.FormClosing += ChatForm_FormClosing;
-
-            _uiRefreshTimer = new System.Windows.Forms.Timer();
-            _uiRefreshTimer.Interval = 500;
-            _uiRefreshTimer.Tick += UiRefreshTimer_Tick;
-            _uiRefreshTimer.Start();
         }
 
         private void ChatForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (_uiRefreshTimer != null)
-            {
-                _uiRefreshTimer.Stop();
-                _uiRefreshTimer.Dispose();
-                _uiRefreshTimer = null;
-            }
-
-            // 统一销毁 Runner，它内部会处理取消任务和释放资源
             if (_runner != null)
             {
-                _runner.Dispose();
-                _runner = null;
+                var runnerToDispose = _runner;
+                _runner = null; // 剥离UI引用
+
+                // 开启后台线程进行总结，不阻塞窗口关闭
+                Task.Run(async () =>
+                {
+                    try { await runnerToDispose.SummarizeSessionAsync(); }
+                    finally { runnerToDispose.Dispose(); }
+                });
             }
 
             ConversationRichTextBox.Clear();
             ConversationRichTextBox.Dispose();
-
-            GC.Collect();
-            GC.WaitForPendingFinalizers();
             GC.Collect();
         }
 
-        private void UiRefreshTimer_Tick(object sender, EventArgs e)
+        private void AppendStreamText(string text)
         {
-            if (this.IsDisposed || !this.Visible) return;
-
-            string textToPrint = "";
-            lock (_bufferLock)
+            if (this.InvokeRequired)
             {
-                if (_streamBuffer.Length == 0) return;
-                textToPrint = _streamBuffer.ToString();
-                _streamBuffer.Clear();
+                this.BeginInvoke(new Action(() => AppendStreamText(text)));
+                return;
             }
 
-            // 执行写入操作
-            WriteTextToBox(textToPrint, true);
-
-            textToPrint = null; // 释放字符串引用，帮助 GC 回收
-        }
-
-        private void WriteTextToBox(string text, bool isAiContent, string role = null)
-        {
-            // 挂起绘制
             SendMessage(ConversationRichTextBox.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
-
             try
             {
-                // 1. 移动光标到末尾
-                // 修复：必须强制转换为 (IntPtr)
-                // -2 (0xFFFFFFFE) 和 -1 (0xFFFFFFFF) 是 RichEdit 的特殊常量
                 SendMessage(ConversationRichTextBox.Handle, EM_SETSEL, (-2), (IntPtr)(-1));
 
-                // 2. 处理 AI 流式输出的 Header
-                if (isAiContent)
+                if (!_isAiTyping)
                 {
-                    if (!_isAiTyping)
-                    {
-                        string time = DateTime.Now.ToString("HH:mm:ss");
-                        ConversationRichTextBox.SelectionColor = Color.Blue;
-                        ConversationRichTextBox.SelectedText = $"\n\n[{time}] <AI>: "; // 补一个换行区分上一条
-                        _isAiTyping = true;
-                        time = null;
-                    }
+                    string time = DateTime.Now.ToString("HH:mm:ss");
                     ConversationRichTextBox.SelectionColor = Color.Blue;
-                }
-                else
-                {
-                    // Log 输出，根据角色定颜色
-                    _isAiTyping = false; // Log 打断了 AI 的连续输出
-                    ConversationRichTextBox.SelectionColor = role == "AI" ? Color.Blue : (role == "System" || role == "ToolResult" ? Color.Gray : Color.Black);
+                    ConversationRichTextBox.SelectedText = $"\n\n[{time}] <AI>: ";
+                    _isAiTyping = true;
                 }
 
-                // 3. 写入实际文本
+                ConversationRichTextBox.SelectionColor = Color.Blue;
                 ConversationRichTextBox.SelectedText = text;
 
-                // 4. 滚动到底部
                 SendMessage(ConversationRichTextBox.Handle, WM_VSCROLL, SB_BOTTOM, IntPtr.Zero);
-
-                // 5. 清空撤销缓冲区 (防止内存泄漏的关键)
                 SendMessage(ConversationRichTextBox.Handle, EM_EMPTYUNDOBUFFER, 0, IntPtr.Zero);
             }
             finally
             {
-                // 恢复绘制
                 SendMessage(ConversationRichTextBox.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
                 ConversationRichTextBox.Invalidate();
             }
         }
-
         private void AppendLog(string role, string message)
         {
             if (this.InvokeRequired)
@@ -209,49 +154,25 @@ namespace XiaoYu_LAM
                 return;
             }
 
-            // 检查是否有残留的流式文本没显示
-            string pendingText = "";
-            lock (_bufferLock)
-            {
-                if (_streamBuffer.Length > 0)
-                {
-                    pendingText = _streamBuffer.ToString();
-                    _streamBuffer.Clear();
-                }
-            }
-
-            // 如果有残留，先强制刷入 UI（视为 AI 的发言）
-            if (!string.IsNullOrEmpty(pendingText))
-            {
-                WriteTextToBox(pendingText, true);
-            }
-
-            pendingText = null;
-
-            // 写入本次的 Log 信息（视为 System/Tool 的发言，isAiContent=false）
-            // 格式化 Log 文本
             string time = DateTime.Now.ToString("HH:mm:ss");
-            string logText = $"\n\n[{time}] <{role}>: {message}";
+            string logText = $"\n\n[{time}] <{role}>: \n{message}";
 
-            // 如果刚才是 AI 在说话，或者是第一次说话，不需要开头的换行，微调一下格式
-            if (!_isAiTyping && ConversationRichTextBox.TextLength == 0)
+            SendMessage(ConversationRichTextBox.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
+            try
             {
-                logText = logText.TrimStart('\n');
+                SendMessage(ConversationRichTextBox.Handle, EM_SETSEL, (-2), (IntPtr)(-1));
+                ConversationRichTextBox.SelectionColor = role == "AI" ? Color.Blue : (role == "System" || role == "ToolResult" ? Color.Gray : (role == "Memory" ? Color.DarkGreen : Color.Black));
+                ConversationRichTextBox.SelectedText = logText;
+                SendMessage(ConversationRichTextBox.Handle, WM_VSCROLL, SB_BOTTOM, IntPtr.Zero);
+                SendMessage(ConversationRichTextBox.Handle, EM_EMPTYUNDOBUFFER, 0, IntPtr.Zero);
             }
-
-            WriteTextToBox(logText, false, role);
-
-            time = null;
-            logText = null;
-        }
-
-        private void AppendStreamText(string text)
-        {
-            lock (_bufferLock)
+            finally
             {
-                _streamBuffer.Append(text);
+                SendMessage(ConversationRichTextBox.Handle, WM_SETREDRAW, 1, IntPtr.Zero);
+                ConversationRichTextBox.Invalidate();
             }
         }
+
 
         private void AppendImageToUI(Bitmap bmp)
         {
@@ -259,12 +180,6 @@ namespace XiaoYu_LAM
             {
                 this.Invoke(new Action(() => AppendImageToUI(bmp)));
                 return;
-            }
-
-            if (_isAiTyping)
-            {
-                ConversationRichTextBox.AppendText("\n\n");
-                _isAiTyping = false;
             }
 
             string time = DateTime.Now.ToString("HH:mm:ss");

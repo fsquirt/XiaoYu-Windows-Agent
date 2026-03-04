@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-//using Windows.Management.Deployment;
+using Windows.Management.Deployment;
 
 namespace XiaoYu_LAM.ToolForm
 {
@@ -146,22 +146,22 @@ namespace XiaoYu_LAM.ToolForm
         private void button4_Click(object sender, EventArgs e)
         {
             // 在适当的上下文中执行
-            //var packageManager = new PackageManager();
-            //var packages = packageManager.FindPackages(); // 获取当前用户安装的所有包
+            var packageManager = new PackageManager();
+            var packages = packageManager.FindPackages(); // 获取当前用户安装的所有包
 
-            //foreach (var package in packages)
-            //{
-            //    try
-            //    {
-            //        // 获取包名称和显示名称
-            //        var name = package.Id.Name;
-            //        var path = package.InstalledLocation.Path;
+            foreach (var package in packages)
+            {
+                try
+                {
+                    // 获取包名称和显示名称
+                    var name = package.Id.Name;
+                    var path = package.InstalledLocation.Path;
 
-            //        // 输出信息
-            //        Console.WriteLine($"App: {name}, Package: {path}");
-            //    }
-            //    catch { }
-            //}
+                    // 输出信息
+                    Console.WriteLine($"App: {name}, Package: {path}");
+                }
+                catch { }
+            }
 
         }
 

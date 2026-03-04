@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
+using XiaoYu_LAM.AgentEngine;
 
 namespace XiaoYu_LAM
 {
@@ -12,8 +15,36 @@ namespace XiaoYu_LAM
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
+            // 管理员权限检测 (放在最前面！)
+            if (!IsAdministrator())
+            {
+                var result = MessageBox.Show("晓予未以管理员权限运行，将无法操作管理员身份运行的进程窗口。\n是否以管理员身份重新启动？", "权限不足", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        var psi = new System.Diagnostics.ProcessStartInfo
+                        {
+                            FileName = Application.ExecutablePath,
+                            Arguments = string.Join(" ", args),
+                            UseShellExecute = true,
+                            Verb = "runas" // 请求提权
+                        };
+                        System.Diagnostics.Process.Start(psi);
+
+                        // 启动提权进程后，当前非管理员进程直接光速退出，不往下走
+                        Environment.Exit(0);
+                        return;
+                    }
+                    catch
+                    {
+                        MessageBox.Show("无法以管理员权限重新启动晓予，请确认当前Windows用户权限", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+
             // 加载配置
-            AgentEngine.ConfigManager.LoadConfig();
+            ConfigManager.LoadConfig();
 
             // 检查启动参数 --task
             string taskContent = null;
@@ -36,7 +67,7 @@ namespace XiaoYu_LAM
                 if (!string.IsNullOrEmpty(taskContent))
                 {
                     // 把任务通过IPC发送给存在的实例
-                    AgentEngine.IPCManager.SendTaskToExistingInstance(taskContent);
+                    IPCManager.SendTaskToExistingInstance(taskContent);
                 }
                 else
                 {
@@ -45,10 +76,14 @@ namespace XiaoYu_LAM
                 return; // 直接退出
             }
 
-            // 程序尚未运行，根据配置决定打开哪个窗口
+            // 正常启动流程
             Form startupForm;
-            if (!AgentEngine.ConfigManager.IsConfigValid)
+            if (!ConfigManager.IsConfigValid)
             {
+                // 创建MarkDown\conversation文件夹
+                string path = AppDomain.CurrentDomain.BaseDirectory + "MarkDown\\conversation";
+                System.IO.Directory.CreateDirectory(path);
+
                 startupForm = new WelcomeForm();
             }
             else
@@ -56,10 +91,33 @@ namespace XiaoYu_LAM
                 startupForm = new MainForm(taskContent); // 将任务传给MainForm
             }
 
+            // 如果当前不是管理员，改一下窗体标题作为提示
+            if (!IsAdministrator())
+            {
+                startupForm.Text += "（非管理员权限）";
+            }
+
             Application.Run(startupForm);
 
             // 退出时释放 Mutex
             GC.KeepAlive(_mutex);
+        }
+
+        // 检查管理员权限的辅助方法
+        private static bool IsAdministrator()
+        {
+            try
+            {
+                using (WindowsIdentity identity = WindowsIdentity.GetCurrent())
+                {
+                    WindowsPrincipal principal = new WindowsPrincipal(identity);
+                    return principal.IsInRole(WindowsBuiltInRole.Administrator);
+                }
+            }
+            catch
+            {
+                return false;
+            }
         }
     }
 }
