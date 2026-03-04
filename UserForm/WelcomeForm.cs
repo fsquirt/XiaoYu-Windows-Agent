@@ -115,7 +115,7 @@ namespace XiaoYu_LAM
                     textBox2.Text = config["API_KEY"];
                     textBox3.Text = config["MODEL_NAME"];
 
-                    if (config["PROTOCOL"] == "Anthropic") 
+                    if (config["PROTOCOL"] == "Anthropic")
                     {
                         checkBox2.Checked = true;
                     }
@@ -176,7 +176,7 @@ namespace XiaoYu_LAM
                     toolStripStatusLabel1.Text = "正在等待" + API_URL + "响应";
 
                     ChatCompletion completion = client.CompleteChat("速速回我任意内容，我正在测试和你的聊天API是否正常");
-                    if(completion.Content[0].Text.Length > 15)
+                    if (completion.Content[0].Text.Length > 15)
                     {
                         toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + completion.Content[0].Text.Substring(0, 15).Replace('\n', '。') + "..."; //取15个够了多了会打乱ui
                     }
@@ -199,15 +199,15 @@ namespace XiaoYu_LAM
                     toolStripStatusLabel1.Text = "正在等待" + API_URL + "响应";
 
                     var response = await chatClient.GetResponseAsync("速速回我任意内容，我正在测试和你的聊天API是否正常");
-                    if(response.Text.Length > 15)
+                    if (response.Text.Length > 15)
                     {
                         toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + response.ToString().Substring(0, 15).Replace('\n', '。') + "..."; //取15个够了多了会打乱ui
                     }
                     else
                     {
-                        toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + response.ToString().Replace('\n', '。') + "..."; 
+                        toolStripStatusLabel1.Text = MODEL_NAME + "成功响应:" + response.ToString().Replace('\n', '。') + "...";
                     }
-                    
+
                     button2.Text = "验证通过";
 
                     client = null;

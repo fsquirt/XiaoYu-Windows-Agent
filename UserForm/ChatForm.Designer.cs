@@ -128,6 +128,7 @@
             // 
             this.ConversationRichTextBox.BorderStyle = System.Windows.Forms.BorderStyle.None;
             this.ConversationRichTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.ConversationRichTextBox.Font = new System.Drawing.Font("微软雅黑", 9F);
             this.ConversationRichTextBox.Location = new System.Drawing.Point(0, 41);
             this.ConversationRichTextBox.Name = "ConversationRichTextBox";
             this.ConversationRichTextBox.Size = new System.Drawing.Size(446, 226);

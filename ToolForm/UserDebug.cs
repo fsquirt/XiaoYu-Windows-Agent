@@ -149,12 +149,12 @@ namespace XiaoYu_LAM
                         cf.ByControlType(ControlType.Text),
                         //cf.ByControlType(ControlType.Document),
                         cf.ByControlType(ControlType.RadioButton)//,
-                        //cf.ByControlType(ControlType.Image)
+                                                                 //cf.ByControlType(ControlType.Image)
 
-                        //cf.ByControlType(ControlType.Group),
-                        //cf.ByControlType(ControlType.Custom),
-                        //cf.ByControlType(ControlType.Pane),
-                        //cf.ByControlType(ControlType.Image)
+                    //cf.ByControlType(ControlType.Group),
+                    //cf.ByControlType(ControlType.Custom),
+                    //cf.ByControlType(ControlType.Pane),
+                    //cf.ByControlType(ControlType.Image)
                     );
 
                     var rawElements = targetWindow.FindAll(TreeScope.Descendants, typeCondition);
@@ -448,7 +448,7 @@ namespace XiaoYu_LAM
         private void button2_Click(object sender, EventArgs e)
         {
             RefreshWindowList();
-            if(pictureBox1.Image != null)
+            if (pictureBox1.Image != null)
             {
                 pictureBox1.Image.Dispose();
                 pictureBox1.Image = null;

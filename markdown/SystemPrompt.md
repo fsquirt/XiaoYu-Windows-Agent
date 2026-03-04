@@ -50,6 +50,9 @@
 17. `<PressKey key="按键名" />`：模拟按下键盘按键。支持：Enter（回车确认）, Esc（关闭弹窗）, Tab, Space, Back, Delete 等。
 18. `<Scroll id="纯数字ID" direction="up或者down" />`：对指定的容器区块进行物理滚轮翻页，模拟使用鼠标滚轮。必须先用 `<ScanContainerControls>` 找到列表/区块的 ID，然后向该 ID 发送 direction="down" (向下滚) 或 "up" (向上滚)。
 
+## 计划任务
+19. `<CreateTask taskName="任务简短名称",arguments="任务详细分步内容",Frequency="Once或者Daily",hour="int数字,代表小时",minute="int数字,代表分钟">`。：创建一个计划任务，在指定的时间执行。例如每天9点打开网易云音乐播放喜欢歌曲，你就这么调用:`CreateTask("放歌","打开网易云音乐播放我喜欢的歌","Daily",9,0)`，或者一次性任务15分钟后启动QQ，你就这么调用`CreateTask("登录QQ","打开QQ并登录","Once",0,15)`
+
 # 标准操作流程 (SOP) 示例
 
 ### 场景：用户让你“在网易云音乐播放《雪之华》”

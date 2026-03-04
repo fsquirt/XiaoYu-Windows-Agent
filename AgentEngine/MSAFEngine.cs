@@ -68,7 +68,7 @@ namespace XiaoYu_LAM.AgentEngine
                     apiKey = mainForm.API_KEY ?? "";
                     protocol = mainForm.PROTOCOL ?? "";
                     var chk = mainForm.Controls.Find("IsDeepThinkMode", true).FirstOrDefault() as CheckBox;
-                    if(chk.Checked)
+                    if (chk.Checked)
                     {
                         isdeepseek = true;
                     }
@@ -104,12 +104,12 @@ namespace XiaoYu_LAM.AgentEngine
             }
 
             // 兼容 openai 和 anthropic
-            if(protocol == "OpenAI")
+            if (protocol == "OpenAI")
             {
                 // 创建基础 OpenAI Client
                 OpenAIClientOptions options = new OpenAIClientOptions() { Endpoint = new Uri(apiUrl) };
 
-                if(isdeepseek == true)
+                if (isdeepseek == true)
                 {
                     // 请求拦截器：注入 thinking: { type: enabled}
                     options.AddPolicy(new DoubaoDeepThinkingPolicy(), PipelinePosition.PerCall);
@@ -124,7 +124,7 @@ namespace XiaoYu_LAM.AgentEngine
 #pragma warning disable MAAI001 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
                 ChatOptions chatOptions = new ChatOptions();
 
-                if(isdeepseek) // 使用思考
+                if (isdeepseek) // 使用思考
                 {
                     Console.WriteLine("使用深度思考模式");
                     chatOptions = new ChatOptions()
@@ -156,7 +156,7 @@ namespace XiaoYu_LAM.AgentEngine
                     {
                         Name = "晓予",
                         ChatOptions = chatOptions,
-                        AIContextProviders = new List<AIContextProvider>{skillsProvider}
+                        AIContextProviders = new List<AIContextProvider> { skillsProvider }
                     });
                 }
                 else
@@ -172,7 +172,7 @@ namespace XiaoYu_LAM.AgentEngine
 #pragma warning restore MAAI001 // 类型仅用于评估，在将来的更新中可能会被更改或删除。取消此诊断以继续。
             else if (protocol == "Anthropic")
             {
-                AnthropicClient rawClient = new AnthropicClient { ApiKey=apiKey,BaseUrl=apiUrl};
+                AnthropicClient rawClient = new AnthropicClient { ApiKey = apiKey, BaseUrl = apiUrl };
 
                 // 第二个雷霆BUG 原Anthropic协议Agnet缺少图片注入 并且原UseFunctionInvocation()底层拦截了工具调用
                 IChatClient meaiClient = new ImageInjectingChatClient(rawClient.AsIChatClient(modelName), this);

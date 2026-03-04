@@ -15,6 +15,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Windows.Forms;
+using XiaoYu_LAM.AgentEngine;
 
 namespace XiaoYu_LAM.UIAEngine
 {
@@ -159,7 +160,8 @@ namespace XiaoYu_LAM.UIAEngine
                 AIFunctionFactory.Create(new Func<int, string, string>(this.SetValue), name: "SetValue"),
                 AIFunctionFactory.Create(new Func<int, string, string>(this.TypeText), name: "TypeText"),
                 AIFunctionFactory.Create(new Func<string, string>(this.PressKey), name: "PressKey"),
-                AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll")
+                AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll"),
+                AIFunctionFactory.Create(new Func<string,string,string,int,int,string>(TaskSchEngine.CreateTask),name:"CreateTask")
                 //AIFunctionFactory.Create(new Func<long, string>(this.BringWindowToFront), name: "BringWindowToFront")
             };
         }
@@ -293,7 +295,7 @@ namespace XiaoYu_LAM.UIAEngine
             catch (Exception ex)
             {
                 Console.WriteLine("获取窗口列表失败: " + ex.Message);
-                
+
             }
 
             StringBuilder sb = new StringBuilder();
@@ -582,7 +584,7 @@ namespace XiaoYu_LAM.UIAEngine
                 string clickRes = PerformMouseClick(id);
                 if (clickRes.Contains("错误")) return $"TypeText 失败，无法聚焦: {clickRes}";
 
-                System.Threading.Thread.Sleep(200); 
+                System.Threading.Thread.Sleep(200);
 
                 // Pressing 会按下按键，using 结束时会自动释放按键
                 using (FlaUI.Core.Input.Keyboard.Pressing(FlaUI.Core.WindowsAPI.VirtualKeyShort.CONTROL))

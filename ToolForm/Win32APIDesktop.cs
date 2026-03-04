@@ -92,7 +92,7 @@ namespace XiaoYu_LAM.ToolForm
         private void button1_Click(object sender, EventArgs e)
         {
             string exePath = "cmd.exe"; // 你想要启动的程序路径
-            
+
             // 1. 创建桌面 (如果已存在则打开)
             IntPtr hDesktop = CreateDesktop(desktopName, IntPtr.Zero, IntPtr.Zero, 0, GENERIC_ALL, IntPtr.Zero);
 
@@ -125,7 +125,6 @@ namespace XiaoYu_LAM.ToolForm
         {
             IntPtr hDesktop = CreateDesktop(desktopName, IntPtr.Zero, IntPtr.Zero, 0, GENERIC_ALL, IntPtr.Zero);
             SwitchDesktop(hDesktop);
-
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -163,6 +162,11 @@ namespace XiaoYu_LAM.ToolForm
             //    }
             //    catch { }
             //}
+
+        }
+
+        private void Win32APIDesktop_Load(object sender, EventArgs e)
+        {
 
         }
     }

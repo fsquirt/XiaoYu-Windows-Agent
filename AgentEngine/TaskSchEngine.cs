@@ -1,6 +1,7 @@
 ﻿using Microsoft.Win32.TaskScheduler;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -11,8 +12,10 @@ namespace XiaoYu_LAM.AgentEngine
 {
     internal class TaskSchEngine
     {
+        public static string folderPath = @"\XiaoYu_Agnet";
+
         // 注册计划任务文件夹
-        public static void CreateTaskSchFolder(string folderPath = @"\XiaoYu_Agnet")
+        public static void CreateTaskSchFolder()
         {
             // 连接本地计划任务服务，using自动释放资源
             using (var taskService = new TaskService())
@@ -38,7 +41,7 @@ namespace XiaoYu_LAM.AgentEngine
         }
 
         // 删除计划任务文件夹
-        public static void DeleteTaskSchFolder(string folderPath = @"\XiaoYu_Agnet")
+        public static void DeleteTaskSchFolder()
         {
             using (var taskService = new TaskService())
             {
@@ -76,8 +79,8 @@ namespace XiaoYu_LAM.AgentEngine
             return TaskFolder;
         }
 
-        // 返回指定文件夹中的计划任务信息集合（任务名称、操作内容、创建时间、下一次执行时间）
-        public static List<TaskInfo> ListTaskFolderTasks(string folderPath = @"\XiaoYu_Agnet")
+        // 返回指定文件夹中的计划任务信息集合（任务名称 触发器 任务描述 任务内容 下次执行时间）
+        public static List<TaskInfo> ListTaskFolderTasks()
         {
             var results = new List<TaskInfo>();
 
@@ -153,7 +156,7 @@ namespace XiaoYu_LAM.AgentEngine
         }
 
         // 删除计划任务
-        public static void DeleteTask(string taskName, string folderPath = @"\XiaoYu_Agnet")
+        public static void DeleteTask(string taskName)
         {
             using (var taskService = new TaskService())
             {
@@ -175,18 +178,19 @@ namespace XiaoYu_LAM.AgentEngine
         }
 
         // 创建计划任务，默认放在\XiaoYu_Agnet文件夹下
-        public static void CreateTask(string taskName, string arguments , string Frequency , int hour , int minute , string folderPath = @"\XiaoYu_Agnet")
+        [Description("创建计划任务，会在指定时间自动开始执行任务，taskName参数为任务名称，arguments参数为任务内容，Frequency是任务频率(只能传入'Once'或者'Daily')，hour和minute分别为小时和分钟")]
+        public static string CreateTask(string taskName, string arguments, string Frequency, int hour, int minute)
         {
             using (var taskService = new TaskService())
             {
-                arguments = "--task " + arguments; 
+                arguments = "--task " + arguments;
                 try
                 {
                     var folder = taskService.GetFolder(folderPath);
                     var taskDefinition = taskService.NewTask();
                     taskDefinition.RegistrationInfo.Description = $"自动执行LLM任务：{taskName}";
 
-                    if(arguments == "Once") //只运行一次
+                    if (Frequency == "Once") //只运行一次
                     {
                         taskDefinition.Triggers.Add(new TimeTrigger { StartBoundary = DateTime.Now.AddHours(hour).AddMinutes(minute) }); // X小时Y分钟后执行一次
                     }
@@ -196,24 +200,28 @@ namespace XiaoYu_LAM.AgentEngine
                     }
                     else
                     {
-                        return;
+                        return "传入了未知Frequency参数 只能传入Once或者Daily Once代表只执行一次 Daily代表每天执行";
                     }
 
                     taskDefinition.Actions.Add(new ExecAction(Application.ExecutablePath, arguments, Environment.CurrentDirectory));
                     folder.RegisterTaskDefinition(taskName, taskDefinition);
                     Console.WriteLine($"计划任务 {taskName} 创建成功");
+                    return "计划任务创建成功";
                 }
                 catch (FileNotFoundException)
                 {
                     Console.WriteLine("文件夹不存在");
+                    return "文件夹不存在";
                 }
                 catch (UnauthorizedAccessException)
                 {
                     Console.WriteLine("权限不足，请以管理员身份运行程序");
+                    return "权限不足";
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"创建计划任务失败：{ex.Message}");
+                    return $"创建计划任务失败：{ex.Message}";
                 }
             }
         }

@@ -39,7 +39,7 @@
             // button1
             // 
             this.button1.Location = new System.Drawing.Point(18, 60);
-            this.button1.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button1.Margin = new System.Windows.Forms.Padding(4);
             this.button1.Name = "button1";
             this.button1.Size = new System.Drawing.Size(217, 33);
             this.button1.TabIndex = 0;
@@ -50,7 +50,7 @@
             // button2
             // 
             this.button2.Location = new System.Drawing.Point(18, 101);
-            this.button2.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button2.Margin = new System.Windows.Forms.Padding(4);
             this.button2.Name = "button2";
             this.button2.Size = new System.Drawing.Size(217, 33);
             this.button2.TabIndex = 1;
@@ -61,7 +61,7 @@
             // button3
             // 
             this.button3.Location = new System.Drawing.Point(18, 142);
-            this.button3.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button3.Margin = new System.Windows.Forms.Padding(4);
             this.button3.Name = "button3";
             this.button3.Size = new System.Drawing.Size(217, 33);
             this.button3.TabIndex = 2;
@@ -72,7 +72,7 @@
             // button4
             // 
             this.button4.Location = new System.Drawing.Point(18, 183);
-            this.button4.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.button4.Margin = new System.Windows.Forms.Padding(4);
             this.button4.Name = "button4";
             this.button4.Size = new System.Drawing.Size(217, 33);
             this.button4.TabIndex = 3;
@@ -111,9 +111,10 @@
             this.Controls.Add(this.button2);
             this.Controls.Add(this.button1);
             this.Font = new System.Drawing.Font("微软雅黑", 9F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(134)));
-            this.Margin = new System.Windows.Forms.Padding(4, 4, 4, 4);
+            this.Margin = new System.Windows.Forms.Padding(4);
             this.Name = "Win32APIDesktop";
             this.Text = "Win32APIDesktop";
+            this.Load += new System.EventHandler(this.Win32APIDesktop_Load);
             this.ResumeLayout(false);
             this.PerformLayout();
 

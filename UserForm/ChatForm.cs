@@ -91,7 +91,7 @@ namespace XiaoYu_LAM
             if (_uiaEngine != null)
             {
                 _uiaEngine.OnScanCompleted -= OnImageScanned; // 解绑事件
-                _uiaEngine.Dispose(); 
+                _uiaEngine.Dispose();
                 _uiaEngine = null;
             }
 
@@ -255,7 +255,7 @@ namespace XiaoYu_LAM
             ConversationRichTextBox.SelectionColor = Color.Gray;
             ConversationRichTextBox.AppendText($"[{time}] <System> 截取了界面：\n");
 
-            time = null ;
+            time = null;
 
             // 在贴入 RichTextBox 之前，缩小图片
             int maxWidth = 400; // 缩略图最大宽度
@@ -398,7 +398,7 @@ namespace XiaoYu_LAM
                     _currentFileName = $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.md";
 
                     safeInput = null;
-                    title = null ;
+                    title = null;
                 }
 
                 var updates = _msafEngine.XiaoYuAgent.RunStreamingAsync(userInput, _currentSession, cancellationToken: _cts.Token);
@@ -441,7 +441,7 @@ namespace XiaoYu_LAM
                     if (enumerator != null) await enumerator.DisposeAsync();
                     if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
                     updates = null;
-                    currentToolCall =  null;
+                    currentToolCall = null;
                     enumerator = null;
                     chk = null;
 
@@ -475,7 +475,7 @@ namespace XiaoYu_LAM
                 _cts = null;
 
                 userInput = null;
-                
+
             }
         }
 

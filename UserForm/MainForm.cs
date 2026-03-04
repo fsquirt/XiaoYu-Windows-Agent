@@ -78,7 +78,8 @@ namespace XiaoYu_LAM
 
             // 批量打开
             ToolStripMenuItem openItem = new ToolStripMenuItem("打开选中文件");
-            openItem.Click += (s, e) => {
+            openItem.Click += (s, e) =>
+            {
                 foreach (ListViewItem item in ChatListView.SelectedItems)
                 {
                     string filePath = item.SubItems[2].Text; // 获取第三列的路径
@@ -91,7 +92,8 @@ namespace XiaoYu_LAM
 
             // 批量删除
             ToolStripMenuItem deleteItem = new ToolStripMenuItem("删除选中文件");
-            deleteItem.Click += (s, e) => {
+            deleteItem.Click += (s, e) =>
+            {
                 int count = ChatListView.SelectedItems.Count;
                 if (count == 0) return;
 
@@ -469,7 +471,7 @@ namespace XiaoYu_LAM
 
         private void IsUseAgentSkills_CheckedChanged(object sender, EventArgs e)
         {
-            if(IsUseAgentSkills.Checked == true)
+            if (IsUseAgentSkills.Checked == true)
             {
                 MessageBox.Show("启用此选项后，将会使用Skills，虽然Microsoft Agent Framework暂时不支持脚本型Skills，但是此程序是直接操作这台计算机!!\n仅使用来自可信来源的技能。技能指令会注入到智能体的上下文中，并可能影响智能体的行为。", "安全性警告!", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             }
@@ -483,7 +485,8 @@ namespace XiaoYu_LAM
         {
             ContextMenuStrip menu = new ContextMenuStrip();
             ToolStripMenuItem deleteItem = new ToolStripMenuItem("移除路径");
-            deleteItem.Click += (s, e) => {
+            deleteItem.Click += (s, e) =>
+            {
                 if (SkillFolderlistView.SelectedItems.Count > 0)
                 {
                     foreach (ListViewItem item in SkillFolderlistView.SelectedItems)
@@ -500,7 +503,8 @@ namespace XiaoYu_LAM
         {
             ContextMenuStrip menu = new ContextMenuStrip();
             ToolStripMenuItem deleteItem = new ToolStripMenuItem("删除选中任务");
-            deleteItem.Click += (s, e) => {
+            deleteItem.Click += (s, e) =>
+            {
                 if (SchTaskListView.SelectedItems.Count == 0) return;
 
                 int count = SchTaskListView.SelectedItems.Count;
@@ -534,9 +538,9 @@ namespace XiaoYu_LAM
 
         private void tabControl1_SelectedIndexChanged(object sender, EventArgs e)
         {
-            if(tabControl1.SelectedTab.Text == "计划任务")
+            if (tabControl1.SelectedTab.Text == "计划任务")
             {
-                LoadTaskSch(); 
+                LoadTaskSch();
             }
         }
     }
