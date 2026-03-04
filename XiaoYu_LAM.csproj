@@ -252,6 +252,12 @@
     <Compile Include="AgentEngine\AgentRunner.cs" />
     <Compile Include="AgentEngine\ConfigManager.cs" />
     <Compile Include="AgentEngine\IPCManager.cs" />
+    <Compile Include="UIAEngine\InteractionManager.cs" />
+    <Compile Include="UIAEngine\Models.cs" />
+    <Compile Include="UIAEngine\NativeMethods.cs" />
+    <Compile Include="UIAEngine\ScannerManager.cs" />
+    <Compile Include="UIAEngine\UiaContext.cs" />
+    <Compile Include="UIAEngine\WindowManager.cs" />
     <Compile Include="UserForm\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>
