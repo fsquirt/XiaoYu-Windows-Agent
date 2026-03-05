@@ -43,10 +43,6 @@
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.查看VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.更新速度ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.高ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.正常ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.低ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.帮助HToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.关于ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.关于晓予ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -57,28 +53,29 @@
             this.pictureBox1 = new System.Windows.Forms.PictureBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.button3 = new System.Windows.Forms.Button();
-            this.button2 = new System.Windows.Forms.Button();
+            this.StopButton = new System.Windows.Forms.Button();
             this.tabPage3 = new System.Windows.Forms.TabPage();
             this.SchTaskListView = new System.Windows.Forms.ListView();
-            this.TaskName = new System.Windows.Forms.ColumnHeader();
-            this.TaskTrigger = new System.Windows.Forms.ColumnHeader();
-            this.TaskDesc = new System.Windows.Forms.ColumnHeader();
-            this.TaskContext = new System.Windows.Forms.ColumnHeader();
-            this.TaskNextTime = new System.Windows.Forms.ColumnHeader();
+            this.TaskName = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskTrigger = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskDesc = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskContext = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.TaskNextTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage4 = new System.Windows.Forms.TabPage();
             this.MemoryListView = new System.Windows.Forms.ListView();
+            this.ExpMemory = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage6 = new System.Windows.Forms.TabPage();
             this.ChatListView = new System.Windows.Forms.ListView();
-            this.ChatTitle = new System.Windows.Forms.ColumnHeader();
-            this.ChatCreateTime = new System.Windows.Forms.ColumnHeader();
-            this.ChatMarkDownFile = new System.Windows.Forms.ColumnHeader();
+            this.ChatTitle = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ChatCreateTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.ChatMarkDownFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.button7 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
             this.button5 = new System.Windows.Forms.Button();
             this.groupBox4 = new System.Windows.Forms.GroupBox();
             this.SkillFolderlistView = new System.Windows.Forms.ListView();
-            this.SkillsFolderPath = new System.Windows.Forms.ColumnHeader();
+            this.SkillsFolderPath = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.AddSkillsPathButton = new System.Windows.Forms.Button();
             this.IsUseAgentSkills = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
@@ -86,18 +83,22 @@
             this.IsHideUIAoutInChatForm = new System.Windows.Forms.CheckBox();
             this.IsDeleteHistoryPic = new System.Windows.Forms.CheckBox();
             this.groupBox2 = new System.Windows.Forms.GroupBox();
-            this.button4 = new System.Windows.Forms.Button();
-            this.button1 = new System.Windows.Forms.Button();
+            this.SaveConfigButton = new System.Windows.Forms.Button();
+            this.VerifyConfigButton = new System.Windows.Forms.Button();
             this.IsAnthropicCheckBox = new System.Windows.Forms.CheckBox();
             this.label4 = new System.Windows.Forms.Label();
             this.IsOpenAICheckBox = new System.Windows.Forms.CheckBox();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.ApiKeyTextBox = new System.Windows.Forms.TextBox();
+            this.ModelNameTextBox = new System.Windows.Forms.TextBox();
+            this.ApiUrlTextbox = new System.Windows.Forms.TextBox();
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.ExpMemory = new System.Windows.Forms.ColumnHeader();
+            this.无ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.低ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.中ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.高ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.深入研究ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -203,22 +204,27 @@
             // 
             // 接入QQToolStripMenuItem
             // 
+            this.接入QQToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.无ToolStripMenuItem,
+            this.低ToolStripMenuItem,
+            this.中ToolStripMenuItem,
+            this.高ToolStripMenuItem,
+            this.深入研究ToolStripMenuItem});
             this.接入QQToolStripMenuItem.Name = "接入QQToolStripMenuItem";
-            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
-            this.接入QQToolStripMenuItem.Text = "接入QQ";
+            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.接入QQToolStripMenuItem.Text = "思考深度";
             // 
             // 设置ToolStripMenuItem
             // 
             this.设置ToolStripMenuItem.Name = "设置ToolStripMenuItem";
-            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(120, 22);
+            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.设置ToolStripMenuItem.Text = "设置";
             this.设置ToolStripMenuItem.Click += new System.EventHandler(this.设置ToolStripMenuItem_Click);
             // 
             // 查看VToolStripMenuItem
             // 
             this.查看VToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.刷新ToolStripMenuItem,
-            this.更新速度ToolStripMenuItem});
+            this.刷新ToolStripMenuItem});
             this.查看VToolStripMenuItem.Name = "查看VToolStripMenuItem";
             this.查看VToolStripMenuItem.Size = new System.Drawing.Size(60, 21);
             this.查看VToolStripMenuItem.Text = "查看(V)";
@@ -226,36 +232,8 @@
             // 刷新ToolStripMenuItem
             // 
             this.刷新ToolStripMenuItem.Name = "刷新ToolStripMenuItem";
-            this.刷新ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.刷新ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.刷新ToolStripMenuItem.Text = "刷新";
-            // 
-            // 更新速度ToolStripMenuItem
-            // 
-            this.更新速度ToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.高ToolStripMenuItem,
-            this.正常ToolStripMenuItem,
-            this.低ToolStripMenuItem});
-            this.更新速度ToolStripMenuItem.Name = "更新速度ToolStripMenuItem";
-            this.更新速度ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
-            this.更新速度ToolStripMenuItem.Text = "更新速度";
-            // 
-            // 高ToolStripMenuItem
-            // 
-            this.高ToolStripMenuItem.Name = "高ToolStripMenuItem";
-            this.高ToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
-            this.高ToolStripMenuItem.Text = "高";
-            // 
-            // 正常ToolStripMenuItem
-            // 
-            this.正常ToolStripMenuItem.Name = "正常ToolStripMenuItem";
-            this.正常ToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
-            this.正常ToolStripMenuItem.Text = "正常";
-            // 
-            // 低ToolStripMenuItem
-            // 
-            this.低ToolStripMenuItem.Name = "低ToolStripMenuItem";
-            this.低ToolStripMenuItem.Size = new System.Drawing.Size(100, 22);
-            this.低ToolStripMenuItem.Text = "低";
             // 
             // 帮助HToolStripMenuItem
             // 
@@ -269,13 +247,13 @@
             // 关于ToolStripMenuItem
             // 
             this.关于ToolStripMenuItem.Name = "关于ToolStripMenuItem";
-            this.关于ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.关于ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.关于ToolStripMenuItem.Text = "查看帮助";
             // 
             // 关于晓予ToolStripMenuItem
             // 
             this.关于晓予ToolStripMenuItem.Name = "关于晓予ToolStripMenuItem";
-            this.关于晓予ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.关于晓予ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.关于晓予ToolStripMenuItem.Text = "关于晓予";
             this.关于晓予ToolStripMenuItem.Click += new System.EventHandler(this.关于晓予ToolStripMenuItem_Click);
             // 
@@ -344,7 +322,7 @@
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.button3);
-            this.groupBox1.Controls.Add(this.button2);
+            this.groupBox1.Controls.Add(this.StopButton);
             this.groupBox1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.groupBox1.Location = new System.Drawing.Point(3, 337);
             this.groupBox1.Name = "groupBox1";
@@ -363,14 +341,15 @@
             this.button3.UseVisualStyleBackColor = true;
             this.button3.Click += new System.EventHandler(this.button3_Click);
             // 
-            // button2
+            // StopButton
             // 
-            this.button2.Location = new System.Drawing.Point(6, 18);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 0;
-            this.button2.Text = "终止任务";
-            this.button2.UseVisualStyleBackColor = true;
+            this.StopButton.Location = new System.Drawing.Point(6, 18);
+            this.StopButton.Name = "StopButton";
+            this.StopButton.Size = new System.Drawing.Size(75, 23);
+            this.StopButton.TabIndex = 0;
+            this.StopButton.Text = "终止任务";
+            this.StopButton.UseVisualStyleBackColor = true;
+            this.StopButton.Click += new System.EventHandler(this.StopButton_Click);
             // 
             // tabPage3
             // 
@@ -419,12 +398,12 @@
             // TaskContext
             // 
             this.TaskContext.Text = "任务内容";
-            this.TaskContext.Width = 143;
+            this.TaskContext.Width = 294;
             // 
             // TaskNextTime
             // 
             this.TaskNextTime.Text = "下次执行时间";
-            this.TaskNextTime.Width = 292;
+            this.TaskNextTime.Width = 102;
             // 
             // tabPage4
             // 
@@ -443,12 +422,17 @@
             this.MemoryListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.MemoryListView.FullRowSelect = true;
             this.MemoryListView.GridLines = true;
+            this.MemoryListView.HideSelection = false;
             this.MemoryListView.Location = new System.Drawing.Point(0, 0);
             this.MemoryListView.Name = "MemoryListView";
             this.MemoryListView.Size = new System.Drawing.Size(787, 387);
             this.MemoryListView.TabIndex = 0;
             this.MemoryListView.UseCompatibleStateImageBehavior = false;
             this.MemoryListView.View = System.Windows.Forms.View.Details;
+            // 
+            // ExpMemory
+            // 
+            this.ExpMemory.Text = "记忆内容";
             // 
             // tabPage6
             // 
@@ -615,7 +599,6 @@
             this.IsDeepThinkMode.TabIndex = 2;
             this.IsDeepThinkMode.Text = "启用深度思考";
             this.IsDeepThinkMode.UseVisualStyleBackColor = true;
-            this.IsDeepThinkMode.CheckedChanged += new System.EventHandler(this.IsDeepThinkMode_CheckedChanged);
             // 
             // IsHideUIAoutInChatForm
             // 
@@ -628,7 +611,6 @@
             this.IsHideUIAoutInChatForm.TabIndex = 1;
             this.IsHideUIAoutInChatForm.Text = "在聊天窗口中隐藏UIA引擎输出";
             this.IsHideUIAoutInChatForm.UseVisualStyleBackColor = true;
-            this.IsHideUIAoutInChatForm.CheckedChanged += new System.EventHandler(this.IsHideUIAoutInChatForm_CheckedChanged);
             // 
             // IsDeleteHistoryPic
             // 
@@ -641,18 +623,17 @@
             this.IsDeleteHistoryPic.TabIndex = 0;
             this.IsDeleteHistoryPic.Text = "删除历史图片以节省token";
             this.IsDeleteHistoryPic.UseVisualStyleBackColor = true;
-            this.IsDeleteHistoryPic.CheckedChanged += new System.EventHandler(this.IsDeleteHistoryPic_CheckedChanged);
             // 
             // groupBox2
             // 
-            this.groupBox2.Controls.Add(this.button4);
-            this.groupBox2.Controls.Add(this.button1);
+            this.groupBox2.Controls.Add(this.SaveConfigButton);
+            this.groupBox2.Controls.Add(this.VerifyConfigButton);
             this.groupBox2.Controls.Add(this.IsAnthropicCheckBox);
             this.groupBox2.Controls.Add(this.label4);
             this.groupBox2.Controls.Add(this.IsOpenAICheckBox);
-            this.groupBox2.Controls.Add(this.textBox3);
-            this.groupBox2.Controls.Add(this.textBox2);
-            this.groupBox2.Controls.Add(this.textBox1);
+            this.groupBox2.Controls.Add(this.ApiKeyTextBox);
+            this.groupBox2.Controls.Add(this.ModelNameTextBox);
+            this.groupBox2.Controls.Add(this.ApiUrlTextbox);
             this.groupBox2.Controls.Add(this.label3);
             this.groupBox2.Controls.Add(this.label2);
             this.groupBox2.Controls.Add(this.label1);
@@ -664,23 +645,25 @@
             this.groupBox2.TabStop = false;
             this.groupBox2.Text = "API和密钥配置";
             // 
-            // button4
+            // SaveConfigButton
             // 
-            this.button4.Location = new System.Drawing.Point(334, 102);
-            this.button4.Name = "button4";
-            this.button4.Size = new System.Drawing.Size(75, 23);
-            this.button4.TabIndex = 10;
-            this.button4.Text = "保存";
-            this.button4.UseVisualStyleBackColor = true;
+            this.SaveConfigButton.Location = new System.Drawing.Point(334, 102);
+            this.SaveConfigButton.Name = "SaveConfigButton";
+            this.SaveConfigButton.Size = new System.Drawing.Size(75, 23);
+            this.SaveConfigButton.TabIndex = 10;
+            this.SaveConfigButton.Text = "保存";
+            this.SaveConfigButton.UseVisualStyleBackColor = true;
+            this.SaveConfigButton.Click += new System.EventHandler(this.SaveConfigButton_Click);
             // 
-            // button1
+            // VerifyConfigButton
             // 
-            this.button1.Location = new System.Drawing.Point(415, 102);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 9;
-            this.button1.Text = "验证";
-            this.button1.UseVisualStyleBackColor = true;
+            this.VerifyConfigButton.Location = new System.Drawing.Point(415, 102);
+            this.VerifyConfigButton.Name = "VerifyConfigButton";
+            this.VerifyConfigButton.Size = new System.Drawing.Size(75, 23);
+            this.VerifyConfigButton.TabIndex = 9;
+            this.VerifyConfigButton.Text = "验证";
+            this.VerifyConfigButton.UseVisualStyleBackColor = true;
+            this.VerifyConfigButton.Click += new System.EventHandler(this.VerifyConfigButton_Click);
             // 
             // IsAnthropicCheckBox
             // 
@@ -712,29 +695,29 @@
             this.IsOpenAICheckBox.Text = "OpenAI";
             this.IsOpenAICheckBox.UseVisualStyleBackColor = true;
             // 
-            // textBox3
+            // ApiKeyTextBox
             // 
-            this.textBox3.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox3.Location = new System.Drawing.Point(67, 47);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(423, 20);
-            this.textBox3.TabIndex = 5;
+            this.ApiKeyTextBox.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ApiKeyTextBox.Location = new System.Drawing.Point(67, 47);
+            this.ApiKeyTextBox.Name = "ApiKeyTextBox";
+            this.ApiKeyTextBox.Size = new System.Drawing.Size(423, 20);
+            this.ApiKeyTextBox.TabIndex = 5;
             // 
-            // textBox2
+            // ModelNameTextBox
             // 
-            this.textBox2.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox2.Location = new System.Drawing.Point(67, 74);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.Size = new System.Drawing.Size(423, 20);
-            this.textBox2.TabIndex = 4;
+            this.ModelNameTextBox.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ModelNameTextBox.Location = new System.Drawing.Point(67, 74);
+            this.ModelNameTextBox.Name = "ModelNameTextBox";
+            this.ModelNameTextBox.Size = new System.Drawing.Size(423, 20);
+            this.ModelNameTextBox.TabIndex = 4;
             // 
-            // textBox1
+            // ApiUrlTextbox
             // 
-            this.textBox1.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
-            this.textBox1.Location = new System.Drawing.Point(67, 20);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.Size = new System.Drawing.Size(423, 20);
-            this.textBox1.TabIndex = 3;
+            this.ApiUrlTextbox.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
+            this.ApiUrlTextbox.Location = new System.Drawing.Point(67, 20);
+            this.ApiUrlTextbox.Name = "ApiUrlTextbox";
+            this.ApiUrlTextbox.Size = new System.Drawing.Size(423, 20);
+            this.ApiUrlTextbox.TabIndex = 3;
             // 
             // label3
             // 
@@ -763,9 +746,40 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
             // 
-            // ExpMemory
+            // 无ToolStripMenuItem
             // 
-            this.ExpMemory.Text = "记忆内容";
+            this.无ToolStripMenuItem.Name = "无ToolStripMenuItem";
+            this.无ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.无ToolStripMenuItem.Text = "无";
+            this.无ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
+            // 
+            // 低ToolStripMenuItem
+            // 
+            this.低ToolStripMenuItem.Name = "低ToolStripMenuItem";
+            this.低ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.低ToolStripMenuItem.Text = "低";
+            this.低ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
+            // 
+            // 中ToolStripMenuItem
+            // 
+            this.中ToolStripMenuItem.Name = "中ToolStripMenuItem";
+            this.中ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.中ToolStripMenuItem.Text = "中";
+            this.中ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
+            // 
+            // 高ToolStripMenuItem
+            // 
+            this.高ToolStripMenuItem.Name = "高ToolStripMenuItem";
+            this.高ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.高ToolStripMenuItem.Text = "高";
+            this.高ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
+            // 
+            // 深入研究ToolStripMenuItem
+            // 
+            this.深入研究ToolStripMenuItem.Name = "深入研究ToolStripMenuItem";
+            this.深入研究ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.深入研究ToolStripMenuItem.Text = "深入研究";
+            this.深入研究ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // MainForm
             // 
@@ -821,10 +835,6 @@
         private System.Windows.Forms.ToolStripMenuItem 接入QQToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 设置ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 刷新ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 更新速度ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 高ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 正常ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem 低ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 关于ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 关于晓予ToolStripMenuItem;
         private System.Windows.Forms.TabControl tabControl1;
@@ -836,7 +846,7 @@
         private System.Windows.Forms.PictureBox pictureBox1;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.Button button3;
-        private System.Windows.Forms.Button button2;
+        private System.Windows.Forms.Button StopButton;
         private System.Windows.Forms.ListView SchTaskListView;
         private System.Windows.Forms.ColumnHeader TaskName;
         private System.Windows.Forms.ColumnHeader TaskTrigger;
@@ -849,16 +859,16 @@
         private System.Windows.Forms.CheckBox IsAnthropicCheckBox;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.CheckBox IsOpenAICheckBox;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.TextBox textBox1;
+        private System.Windows.Forms.TextBox ApiKeyTextBox;
+        private System.Windows.Forms.TextBox ModelNameTextBox;
+        private System.Windows.Forms.TextBox ApiUrlTextbox;
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Label label2;
         private System.Windows.Forms.Label label1;
         private System.Windows.Forms.GroupBox groupBox3;
         private System.Windows.Forms.CheckBox IsDeleteHistoryPic;
-        private System.Windows.Forms.Button button4;
-        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.Button SaveConfigButton;
+        private System.Windows.Forms.Button VerifyConfigButton;
         private System.Windows.Forms.CheckBox IsHideUIAoutInChatForm;
         private System.Windows.Forms.Button button5;
         private System.Windows.Forms.CheckBox IsDeepThinkMode;
@@ -875,5 +885,10 @@
         private System.Windows.Forms.Button button7;
         private System.Windows.Forms.ListView MemoryListView;
         private System.Windows.Forms.ColumnHeader ExpMemory;
+        private System.Windows.Forms.ToolStripMenuItem 无ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 低ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 中ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 高ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 深入研究ToolStripMenuItem;
     }
 }

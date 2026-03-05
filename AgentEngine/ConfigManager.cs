@@ -25,6 +25,8 @@ namespace XiaoYu_LAM.AgentEngine
 
         public static bool IsConfigValid => !string.IsNullOrEmpty(ApiKey) && !string.IsNullOrEmpty(ApiUrl);
 
+        public static int ThinkingDeepth { get; set; } = 3;
+
         private static string ConfigPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
 
         public static void LoadConfig()
@@ -50,6 +52,7 @@ namespace XiaoYu_LAM.AgentEngine
                     case "IS_DEEP_THINK": IsDeepThinkMode = value.Equals("True", StringComparison.OrdinalIgnoreCase); break;
                     case "IS_DEL_HISTORY_PIC": IsDeleteHistoryPic = value.Equals("True", StringComparison.OrdinalIgnoreCase); break;
                     case "IS_HIDE_UIA": IsHideUIAoutInChatForm = value.Equals("True", StringComparison.OrdinalIgnoreCase); break;
+                    case "THINKING_DEEPTH":if (int.TryParse(value, out int depth)) {ThinkingDeepth = depth;} break;
                 }
             }
         }
@@ -71,7 +74,8 @@ namespace XiaoYu_LAM.AgentEngine
                 "[UI_SETTINGS]",
                 $"IS_DEEP_THINK={IsDeepThinkMode}",
                 $"IS_DEL_HISTORY_PIC={IsDeleteHistoryPic}",
-                $"IS_HIDE_UIA={IsHideUIAoutInChatForm}"
+                $"IS_HIDE_UIA={IsHideUIAoutInChatForm}",
+                $"THINKING_DEEPTH={ThinkingDeepth}"
             };
             File.WriteAllLines(ConfigPath, lines, Encoding.UTF8);
         }

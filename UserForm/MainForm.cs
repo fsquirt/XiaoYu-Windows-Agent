@@ -1,4 +1,9 @@
-﻿using System;
+﻿using Anthropic;
+using Microsoft.Extensions.AI;
+using OpenAI;
+using OpenAI.Chat;
+using System;
+using System.ClientModel;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -25,12 +30,13 @@ namespace XiaoYu_LAM
         {
             InitializeComponent();
             this.Load += MainForm_Load;
-            InitContextMenu();
-
+            
             // 初始化右键菜单
             InitSkillsContextMenu();
             InitSchTaskContextMenu();
             InitMemoryContextMenu();
+            InitContextMenu();
+            InitCheckBoxEvents();
 
             // Console.Write重定向
             Console.SetOut(new TextBoxWriter(this.LogrichTextBox1));
@@ -205,9 +211,9 @@ namespace XiaoYu_LAM
             try
             {
                 // 基础 API 配置
-                textBox1.Text = ConfigManager.ApiUrl;
-                textBox3.Text = ConfigManager.ApiKey;
-                textBox2.Text = ConfigManager.ModelName;
+                ApiUrlTextbox.Text = ConfigManager.ApiUrl;
+                ApiKeyTextBox.Text = ConfigManager.ApiKey;
+                ModelNameTextBox.Text = ConfigManager.ModelName;
 
                 if (ConfigManager.Protocol == "OpenAI")
                     IsOpenAICheckBox.Checked = true;
@@ -246,6 +252,39 @@ namespace XiaoYu_LAM
                     toolStripStatusLabel1.Text = $"当前模型: {ConfigManager.ModelName}, 协议: {ConfigManager.Protocol}";
                     toolStripStatusLabel2.Text = ConfigManager.ApiUrl;
                 }
+
+                // 根据已加载的 THINKING_DEEPTH 设置菜单项的图标（先清除再设置）
+                try
+                {
+                    无ToolStripMenuItem.Image = null;
+                    低ToolStripMenuItem.Image = null;
+                    中ToolStripMenuItem.Image = null;
+                    高ToolStripMenuItem.Image = null;
+                    深入研究ToolStripMenuItem.Image = null;
+
+                    switch (ConfigManager.ThinkingDeepth)
+                    {
+                        case 0:
+                            无ToolStripMenuItem.Image = Properties.Resources.OK;
+                            break;
+                        case 1:
+                            低ToolStripMenuItem.Image = Properties.Resources.OK;
+                            break;
+                        case 2:
+                            中ToolStripMenuItem.Image = Properties.Resources.OK;
+                            break;
+                        case 3:
+                            高ToolStripMenuItem.Image = Properties.Resources.OK;
+                            break;
+                        case 4:
+                            深入研究ToolStripMenuItem.Image = Properties.Resources.OK;
+                            break;
+                    }
+                }
+                catch
+                {
+                    // 忽略资源缺失或设置失败
+                }
             }
             catch (Exception ex)
             {
@@ -269,7 +308,8 @@ namespace XiaoYu_LAM
                 var item = new ListViewItem(task.Name ?? string.Empty);
                 item.SubItems.Add(task.Triggers ?? string.Empty);
                 item.SubItems.Add(task.Description ?? string.Empty);
-                item.SubItems.Add(task.Actions ?? string.Empty);
+                string taskdetail = task.Actions.ToString().Split(new[] { "--task " }, 2, StringSplitOptions.None).LastOrDefault();
+                item.SubItems.Add(taskdetail ?? string.Empty);
                 item.SubItems.Add(task.NextRunTime?.ToString() ?? string.Empty);
 
                 SchTaskListView.Items.Add(item);
@@ -461,6 +501,8 @@ namespace XiaoYu_LAM
             Process.Start("notepad.exe", Path.GetFullPath("config.ini"));
         }
 
+
+
         private void InitCheckBoxEvents()
         {
             var chkDeepThink = this.Controls.Find("IsDeepThinkMode", true).FirstOrDefault() as CheckBox;
@@ -567,6 +609,10 @@ namespace XiaoYu_LAM
             {
                 LoadTaskSch();
             }
+            if (tabControl1.SelectedTab.Text == "记忆")
+            {
+                RefreshMemoryListView();
+            }
         }
 
         private void 设置ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -624,24 +670,6 @@ namespace XiaoYu_LAM
 
             Console.WriteLine($"\n========== 计划任务执行完毕 ==========\n");
             runner.Dispose();
-        }
-
-        private void IsDeleteHistoryPic_CheckedChanged(object sender, EventArgs e)
-        {
-            ConfigManager.IsDeleteHistoryPic = IsDeleteHistoryPic.Checked;
-            ConfigManager.SaveConfig();
-        }
-
-        private void IsDeepThinkMode_CheckedChanged(object sender, EventArgs e)
-        {
-            ConfigManager.IsDeepThinkMode = IsDeepThinkMode.Checked;
-            ConfigManager.SaveConfig();
-        }
-
-        private void IsHideUIAoutInChatForm_CheckedChanged(object sender, EventArgs e)
-        {
-            ConfigManager.IsHideUIAoutInChatForm = IsHideUIAoutInChatForm.Checked;
-            ConfigManager.SaveConfig();
         }
 
         private void 退出ToolStripMenuItem_Click(object sender, EventArgs e)
@@ -732,6 +760,136 @@ namespace XiaoYu_LAM
             // 让 ListView 支持多选，方便批量删除
             MemoryListView.MultiSelect = true;
             MemoryListView.FullRowSelect = true;
+        }
+
+        private void SaveConfigButton_Click(object sender, EventArgs e)
+        {
+            ConfigManager.ApiKey = ApiKeyTextBox.Text;
+            ConfigManager.ApiUrl = ApiUrlTextbox.Text;
+            ConfigManager.ModelName = ModelNameTextBox.Text;
+            ConfigManager.SaveConfig();
+        }
+
+        private async void VerifyConfigButton_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                string API_URL = ApiUrlTextbox.Text;
+                string API_KEY = ApiKeyTextBox.Text;
+                string MODEL_NAME = ModelNameTextBox.Text;
+
+                if (IsOpenAICheckBox.Checked)
+                {
+                    ChatClient client = new ChatClient(
+                        model: MODEL_NAME,
+                        credential: new ApiKeyCredential(API_KEY),
+                        options: new OpenAIClientOptions()
+                        {
+                            Endpoint = new Uri(API_URL)
+                        });
+
+                    ChatCompletion completion = client.CompleteChat("速速回我任意内容，我正在测试和你的聊天API是否正常");
+                    MessageBox.Show("验证成功！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    VerifyConfigButton.Text = "验证通过";
+
+                    client = null;
+                    completion = null;
+                }
+                else if (IsAnthropicCheckBox.Checked)
+                {
+                    AnthropicClient client = new AnthropicClient { ApiKey = API_KEY, BaseUrl = API_URL };
+                    IChatClient chatClient = client.AsIChatClient(MODEL_NAME)
+                        .AsBuilder()
+                        .UseFunctionInvocation()
+                        .Build();
+                    var response = await chatClient.GetResponseAsync("速速回我任意内容，我正在测试和你的聊天API是否正常");
+                    MessageBox.Show("验证成功！", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+
+                    VerifyConfigButton.Text = "验证通过";
+
+                    client = null;
+                    chatClient = null;
+                }
+                else
+                {
+                    MessageBox.Show("请先选择协议类型（OpenAI或Anthropic）", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("发生错误：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                VerifyConfigButton.Text = "失败";
+            }
+
+        }
+
+        private void StopButton_Click(object sender, EventArgs e)
+        {
+            //寻找并直接关闭所有AgnetRunner实例，包括计划任务和ChatForm创建的
+            try
+            {
+                // 先尝试温和地取消所有任务
+                AgentEngine.AgentRunner.CancelAll();
+
+                // 再强制终止并释放所有实例
+                AgentEngine.AgentRunner.TerminateAll();
+
+                Console.WriteLine("已终止所有 AgentRunner 实例。");
+                toolStripStatusLabel1.Text = "已终止所有任务";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("终止所有 AgentRunner 时出错: " + ex.Message);
+                toolStripStatusLabel1.Text = "终止任务时出错";
+            }
+        }
+
+        // 统一的思考深度菜单处理器，五个选项共用一个函数（类似 InitCheckBoxEvents 的做法）
+        private void SetThinkingDepth_Click(object sender, EventArgs e)
+        {
+            if (!(sender is ToolStripMenuItem item)) return;
+
+            // 清除所有项的图标
+            无ToolStripMenuItem.Image = null;
+            低ToolStripMenuItem.Image = null;
+            中ToolStripMenuItem.Image = null;
+            高ToolStripMenuItem.Image = null;
+            深入研究ToolStripMenuItem.Image = null;
+
+            switch (item.Name)
+            {
+                case "无ToolStripMenuItem":
+                    ConfigManager.ThinkingDeepth = 0;
+                    break;
+                case "低ToolStripMenuItem":
+                    ConfigManager.ThinkingDeepth = 1;
+                    break;
+                case "中ToolStripMenuItem":
+                    ConfigManager.ThinkingDeepth = 2;
+                    break;
+                case "高ToolStripMenuItem":
+                    ConfigManager.ThinkingDeepth = 3;
+                    break;
+                case "深入研究ToolStripMenuItem":
+                    ConfigManager.ThinkingDeepth = 4;
+                    break;
+                default:
+                    return;
+            }
+
+            ConfigManager.SaveConfig();
+
+            // 设置被选中项的图标为资源中的 OK（若不存在会抛出资源错误）
+            try
+            {
+                item.Image = Properties.Resources.OK;
+            }
+            catch
+            {
+                // 忽略无资源或其他设置失败的情况
+            }
         }
     }
 }

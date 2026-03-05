@@ -27,9 +27,6 @@ namespace XiaoYu_LAM.AgentEngine
 {
     public class MSAFEngine
     {
-        // 在 MSAFEngine 类内部添加事件和属性
-        public event Action<string> OnToolCall;
-        public event Action<string, string> OnToolResult;
         public IChatClient RawChatClient { get; private set; } // 用于给反思Agent使用
 
         public AIAgent XiaoYuAgent { get; private set; }
@@ -105,7 +102,7 @@ namespace XiaoYu_LAM.AgentEngine
                         Tools = uiEngine.GetTools(), // 直接获取原生工具
                         Reasoning = new ReasoningOptions()
                         {
-                            Effort = ReasoningEffort.High,
+                            Effort = (ReasoningEffort)ConfigManager.ThinkingDeepth,
                             Output = ReasoningOutput.Full
                         },
                     };

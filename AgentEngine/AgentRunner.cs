@@ -7,11 +7,54 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using XiaoYu_LAM.UIAEngine;
+using System.Collections.Generic;
 
 namespace XiaoYu_LAM.AgentEngine
 {
     public class AgentRunner : IDisposable
     {
+        // 全局注册表，用于跟踪所有运行中的 AgentRunner 实例，便于集中停止/释放
+        private static readonly object _globalLock = new object();
+        private static readonly List<AgentRunner> _activeRunners = new List<AgentRunner>();
+
+        public static AgentRunner[] GetActiveRunners()
+        {
+            lock (_globalLock)
+            {
+                return _activeRunners.ToArray();
+            }
+        }
+
+        // 取消所有正在运行的任务，但不立即释放实例
+        public static void CancelAll()
+        {
+            AgentRunner[] arr = GetActiveRunners();
+            foreach (var r in arr)
+            {
+                try { r.CancelTask(); } catch { }
+            }
+        }
+
+        // 取消并释放所有运行器实例
+        public static void TerminateAll()
+        {
+            AgentRunner[] arr = GetActiveRunners();
+            foreach (var r in arr)
+            {
+                try { r.CancelTask(); } catch { }
+            }
+
+            foreach (var r in arr)
+            {
+                try { r.Dispose(); } catch { }
+            }
+
+            lock (_globalLock)
+            {
+                _activeRunners.Clear();
+            }
+        }
+
         public MSAFEngine MsafEngine { get; private set; }
         public mainEngine UiaEngine { get; private set; }
         public AgentSession CurrentSession { get; private set; }
@@ -30,6 +73,12 @@ namespace XiaoYu_LAM.AgentEngine
         {
             UiaEngine = new mainEngine();
             MsafEngine = new MSAFEngine();
+
+            // 将本实例注册到全局列表，便于外部通过静态方法进行集中管理
+            lock (_globalLock)
+            {
+                _activeRunners.Add(this);
+            }
 
             // 监听截图
             UiaEngine.OnScanCompleted += (drawnBmp, originalBmp) =>
@@ -160,6 +209,12 @@ namespace XiaoYu_LAM.AgentEngine
             CancelTask();
             UiaEngine?.Dispose();
             MsafEngine?.PendingImage?.Dispose();
+
+            // 从全局列表中移除自身
+            lock (_globalLock)
+            {
+                if (_activeRunners.Contains(this)) _activeRunners.Remove(this);
+            }
         }
     }
 }

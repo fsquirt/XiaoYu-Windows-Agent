@@ -38,13 +38,13 @@ namespace XiaoYu_LAM
 
             // 工具调用显示
             _runner.OnToolCall += tool => {
-                if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
+                if (_isAiTyping) { AppendStreamText("\n"); _isAiTyping = false; }
                 if (!ConfigManager.IsHideUIAoutInChatForm) AppendLog("System", $"🔄 正在调用工具: {tool}...");
             };
 
             // 工具结果显示
             _runner.OnToolResult += (tool, res) => {
-                if (_isAiTyping) { AppendStreamText("\n\n"); _isAiTyping = false; }
+                if (_isAiTyping) { AppendStreamText("\n"); _isAiTyping = false; }
                 if (!ConfigManager.IsHideUIAoutInChatForm) AppendLog("ToolResult", $"[{tool}] 结果: \n{res}");
             };
 
@@ -130,7 +130,7 @@ namespace XiaoYu_LAM
                 {
                     string time = DateTime.Now.ToString("HH:mm:ss");
                     ConversationRichTextBox.SelectionColor = Color.Blue;
-                    ConversationRichTextBox.SelectedText = $"\n\n[{time}] <AI>: ";
+                    ConversationRichTextBox.SelectedText = $"\n[{time}] <AI>: ";
                     _isAiTyping = true;
                 }
 
@@ -155,7 +155,7 @@ namespace XiaoYu_LAM
             }
 
             string time = DateTime.Now.ToString("HH:mm:ss");
-            string logText = $"\n\n[{time}] <{role}>: \n{message}";
+            string logText = $"\n[{time}] <{role}>: {message}";
 
             SendMessage(ConversationRichTextBox.Handle, WM_SETREDRAW, 0, IntPtr.Zero);
             try
@@ -209,7 +209,7 @@ namespace XiaoYu_LAM
                 Clipboard.Clear();
             }
 
-            ConversationRichTextBox.AppendText("\n\n");
+            ConversationRichTextBox.AppendText("\n");
 
             //ConversationRichTextBox.ScrollToCaret();
             SendMessage(ConversationRichTextBox.Handle, WM_VSCROLL, SB_BOTTOM, IntPtr.Zero);
@@ -258,7 +258,7 @@ namespace XiaoYu_LAM
                     var match = Regex.Match(fileText, @"## Chat History\r?\n([\s\S]*?)\r?\n## Session Data");
                     if (match.Success)
                     {
-                        ConversationRichTextBox.Text = match.Groups[1].Value.Trim() + "\n\n";
+                        ConversationRichTextBox.Text = match.Groups[1].Value.Trim() + "\n";
                     }
 
                     AppendLog("System", $"成功恢复会话: {_currentFileName}");
@@ -276,6 +276,7 @@ namespace XiaoYu_LAM
             if (string.IsNullOrEmpty(userInput)) return;
 
             toolStripLabel1.Text = "正在执行任务...";
+            toolStripLabel1.Image = Properties.Resources.WorkingIcon;
             btnExecute.Enabled = false;
             btnStop.Enabled = true;
             txtInput.Enabled = false;
@@ -305,6 +306,7 @@ namespace XiaoYu_LAM
             btnStop.Enabled = false;
             txtInput.Enabled = true;
             toolStripLabel1.Text = "任务执行完毕";
+            toolStripLabel1.Image = Properties.Resources.ReadyIcon;
         }
 
         private void btnStop_Click(object sender, EventArgs e)
