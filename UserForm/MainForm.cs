@@ -613,6 +613,10 @@ namespace XiaoYu_LAM
             {
                 RefreshMemoryListView();
             }
+            if (tabControl1.SelectedTab.Text == "对话记录")
+            {
+                LoadMarkdownFiles();
+            }
         }
 
         private void 设置ToolStripMenuItem_Click(object sender, EventArgs e)

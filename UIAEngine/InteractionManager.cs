@@ -48,7 +48,7 @@ namespace XiaoYu_LAM.UIAEngine
 
         public string DoubleClick(int id)
         {
-            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
+            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。请重新扫描控件";
             try
             {
                 if (element.TryGetClickablePoint(out var point))
@@ -65,7 +65,7 @@ namespace XiaoYu_LAM.UIAEngine
 
         public string PerformMouseClick(int id)
         {
-            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
+            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。请重新扫描控件";
             try
             {
                 if (element.TryGetClickablePoint(out var point))
@@ -82,7 +82,7 @@ namespace XiaoYu_LAM.UIAEngine
 
         public string SetValue(int id, string text)
         {
-            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
+            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。请重新扫描控件";
             try
             {
                 if (element.Patterns.Value.IsSupported && !element.Patterns.Value.Pattern.IsReadOnly.Value)
@@ -97,7 +97,7 @@ namespace XiaoYu_LAM.UIAEngine
 
         public string TypeText(int id, string text)
         {
-            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
+            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。请重新扫描控件";
             try
             {
                 string clickRes = PerformMouseClick(id);
@@ -121,7 +121,7 @@ namespace XiaoYu_LAM.UIAEngine
 
         public string RightClick(int id)
         {
-            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
+            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。请重新扫描控件";
             try
             {
                 if (element.TryGetClickablePoint(out var point))
@@ -138,7 +138,7 @@ namespace XiaoYu_LAM.UIAEngine
 
         public string Scroll(int id, string direction)
         {
-            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。";
+            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。请重新扫描控件";
             try
             {
                 var rect = element.BoundingRectangle;
@@ -151,12 +151,31 @@ namespace XiaoYu_LAM.UIAEngine
                 FlaUI.Core.Input.Mouse.Position = new System.Drawing.Point(centerX, centerY);
                 System.Threading.Thread.Sleep(50);
 
-                double scrollAmount = direction.ToLower() == "down" ? -3.0 : 3.0;
+                double scrollAmount = direction.ToLower() == "down" ? -7.0 : 7.0;
                 FlaUI.Core.Input.Mouse.Scroll(scrollAmount);
 
                 return $"已在目标区域中心点 ({centerX},{centerY}) 向 {direction} 物理滚动。请重新扫描检查。";
             }
             catch (Exception ex) { return $"滚动异常: {ex.Message}"; }
+        }
+
+        public string ScrollWithKeyboard(int id, string direction)
+        {
+            if (!_context.LastScanElements.TryGetValue(id, out var element)) return $"错误：未找到 ID {id}。请重新扫描控件";
+            try
+            {
+                var rect = element.BoundingRectangle;
+                if (rect.IsEmpty) return "错误：控件没有有效的边界。";
+                int centerX = (int)(rect.Left + rect.Width / 2);
+                int centerY = (int)(rect.Top + rect.Height / 2);
+                try { element.Focus(); } catch { }
+                FlaUI.Core.Input.Mouse.Position = new System.Drawing.Point(centerX, centerY);
+                System.Threading.Thread.Sleep(50);
+                FlaUI.Core.WindowsAPI.VirtualKeyShort key = direction.ToLower() == "down" ? FlaUI.Core.WindowsAPI.VirtualKeyShort.NEXT : FlaUI.Core.WindowsAPI.VirtualKeyShort.PRIOR;
+                FlaUI.Core.Input.Keyboard.Press(key);
+                return $"已在目标区域中心点 ({centerX},{centerY}) 模拟按键 {key} 进行滚动。请重新扫描检查。";
+            }
+            catch (Exception ex) { return $"键盘滚动异常: {ex.Message}"; }
         }
 
         public string PressKey(string keyName)

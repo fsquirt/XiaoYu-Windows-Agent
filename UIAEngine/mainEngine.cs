@@ -58,6 +58,7 @@ namespace XiaoYu_LAM.UIAEngine
                 AIFunctionFactory.Create(new Func<int, string, string>(this.SetValue), name: "SetValue"),
                 AIFunctionFactory.Create(new Func<int, string, string>(this.TypeText), name: "TypeText"),
                 AIFunctionFactory.Create(new Func<string, string>(this.PressKey), name: "PressKey"),
+                AIFunctionFactory.Create(new Func<int, string, string>(this.ScrollWithKeyboard), name: "ScrollWithKeyboard"),
                 AIFunctionFactory.Create(new Func<int, string, string>(this.Scroll), name: "Scroll"),
                 AIFunctionFactory.Create(new Func<string,string,string,int,int,string>(TaskSchEngine.CreateTask),name:"CreateTask")//,
                 //AIFunctionFactory.Create(new Func<long, string>(this.BringWindowToFront), name: "BringWindowToFront")
@@ -104,9 +105,12 @@ namespace XiaoYu_LAM.UIAEngine
         [Description("前台物理模拟打字（当 SetValue 失败或不支持时使用，会先强制点击聚焦，全选删除旧内容，再敲击新内容）。")]
         public string TypeText([Description("要输入文本的控件ID")] int id, [Description("要输入的文字")] string text) => _interactionManager.TypeText(id, text); 
         [Description("物理鼠标右键点击（用于呼出右键菜单）。")]
-        public string RightClick([Description("要操作的控件纯数字ID")] int id) => _interactionManager.RightClick(id); 
-        [Description("对指定的容器区块进行物理滚轮翻页。必须提供 direction 参数。")]
-        public string Scroll([Description("要滚动的容器控件ID")] int id, [Description("滚动方向，只能为 'down' 或 'up'")] string direction) => _interactionManager.Scroll(id, direction); 
+        public string RightClick([Description("要操作的控件纯数字ID")] int id) => _interactionManager.RightClick(id);
+        [Description("将鼠标移动到指定控件位置然后模拟键盘按下键盘的PageUp或者PageDown来进行翻页，这个工具接受任意类型控件ID")]
+        public string ScrollWithKeyboard([Description("鼠标要放到的控件ID")] int id, [Description("滚动方向，只能为 'down' 或 'up'")] string direction) => _interactionManager.ScrollWithKeyboard(id, direction);
+
+        [Description("对指定的容器区块进行物理滚轮翻页。这个工具只接受容器区块类型ID")]
+        public string Scroll([Description("要滚动的容器控件ID")] int id, [Description("滚动方向，只能为 'down' 或 'up'")] string direction) => _interactionManager.Scroll(id, direction);
         [Description("模拟按下键盘按键。支持: Enter, Esc, Tab, Space, Back, Delete 等。")]
         public string PressKey([Description("按键名称")] string keyName) => _interactionManager.PressKey(keyName);
         #endregion
