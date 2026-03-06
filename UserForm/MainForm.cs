@@ -895,5 +895,27 @@ namespace XiaoYu_LAM
                 // 忽略无资源或其他设置失败的情况
             }
         }
+
+        private void 刷新ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            LogrichTextBox1.Text = "";
+        }
+
+        private void 查看帮助ToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            //打开网页 https://www.cloudyou.top/xiaoyu-help/
+            try
+            {
+                Process.Start(new ProcessStartInfo
+                {
+                    FileName = "https://www.cloudyou.top/xiaoyu-help/",
+                    UseShellExecute = true
+                });
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"无法打开帮助页面: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
