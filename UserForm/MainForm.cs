@@ -21,13 +21,14 @@ using XiaoYu_LAM.ToolForm;
 using XiaoYu_LAM.UIAEngine;
 using XiaoYu_LAM.UserForm;
 
-
 namespace XiaoYu_LAM
 {
+
     public partial class MainForm : Form
     {
         // 静态实例，方便其他地方万一需要直接操作 MainForm（虽然用 Console 就够了）
         public static MainForm Instance;
+        private XiaoYu_LAM.AgentEngine.TencentQQ _qqService;
         public MainForm(string initialTask = null)
         {
             InitializeComponent();
@@ -59,6 +60,9 @@ namespace XiaoYu_LAM
 
             // 订阅数据变化事件，当后台有新总结的记忆或删除了记忆时，自动刷新 UI
             MemoryManager.OnMemoriesChanged += RefreshMemoryListView;
+
+            // 初始化 QQ 服务实例
+            _qqService = new XiaoYu_LAM.AgentEngine.TencentQQ();
         }
 
         public string MODEL_NAME = "";
@@ -920,5 +924,34 @@ namespace XiaoYu_LAM
             }
         }
 
+        private void 接入QQToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            AeroSetupQQWizard aeroSetupQQWizard = new AeroSetupQQWizard();
+            aeroSetupQQWizard.ShowDialog();
+        }
+
+        private void IsUseTencentQQ_CheckedChanged(object sender, EventArgs e)
+        {
+            if (IsUseTencentQQ.Checked)
+            {
+                // 检查配置是否完整
+                if (ConfigManager.QqAdminQQ == 0 || string.IsNullOrEmpty(ConfigManager.QqBotUrl))
+                {
+                    MessageBox.Show("请先在设置向导或配置文件中填写完整的 QQ 机器人配置！", "配置缺失", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                    IsUseTencentQQ.Checked = false;
+                    return;
+                }
+
+                // 启动服务
+                _qqService.StartAsync();
+                toolStripStatusLabel1.Text = "QQ 监听服务已启动";
+            }
+            else
+            {
+                // 停止服务
+                _qqService.Stop();
+                toolStripStatusLabel1.Text = "QQ 监听服务已停止";
+            }
+        }
     }
 }

@@ -46,6 +46,7 @@
             this.高ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.深入研究ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.接入QQToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.查看VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.帮助HToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -99,6 +100,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
+            this.IsUseTencentQQ = new System.Windows.Forms.CheckBox();
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -197,7 +199,8 @@
             // 
             this.选项OToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.接入QQToolStripMenuItem,
-            this.设置ToolStripMenuItem});
+            this.设置ToolStripMenuItem,
+            this.接入QQToolStripMenuItem1});
             this.选项OToolStripMenuItem.Name = "选项OToolStripMenuItem";
             this.选项OToolStripMenuItem.Size = new System.Drawing.Size(62, 21);
             this.选项OToolStripMenuItem.Text = "选项(O)";
@@ -217,35 +220,35 @@
             // 无ToolStripMenuItem
             // 
             this.无ToolStripMenuItem.Name = "无ToolStripMenuItem";
-            this.无ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.无ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.无ToolStripMenuItem.Text = "无";
             this.无ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 低ToolStripMenuItem
             // 
             this.低ToolStripMenuItem.Name = "低ToolStripMenuItem";
-            this.低ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.低ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.低ToolStripMenuItem.Text = "低";
             this.低ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 中ToolStripMenuItem
             // 
             this.中ToolStripMenuItem.Name = "中ToolStripMenuItem";
-            this.中ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.中ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.中ToolStripMenuItem.Text = "中";
             this.中ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 高ToolStripMenuItem
             // 
             this.高ToolStripMenuItem.Name = "高ToolStripMenuItem";
-            this.高ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.高ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.高ToolStripMenuItem.Text = "高";
             this.高ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 深入研究ToolStripMenuItem
             // 
             this.深入研究ToolStripMenuItem.Name = "深入研究ToolStripMenuItem";
-            this.深入研究ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.深入研究ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.深入研究ToolStripMenuItem.Text = "深入研究";
             this.深入研究ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
@@ -255,6 +258,13 @@
             this.设置ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.设置ToolStripMenuItem.Text = "设置";
             this.设置ToolStripMenuItem.Click += new System.EventHandler(this.设置ToolStripMenuItem_Click);
+            // 
+            // 接入QQToolStripMenuItem1
+            // 
+            this.接入QQToolStripMenuItem1.Name = "接入QQToolStripMenuItem1";
+            this.接入QQToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.接入QQToolStripMenuItem1.Text = "接入QQ";
+            this.接入QQToolStripMenuItem1.Click += new System.EventHandler(this.接入QQToolStripMenuItem1_Click);
             // 
             // 查看VToolStripMenuItem
             // 
@@ -614,6 +624,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.IsUseTencentQQ);
             this.groupBox3.Controls.Add(this.IsDeepThinkMode);
             this.groupBox3.Controls.Add(this.IsHideUIAoutInChatForm);
             this.groupBox3.Controls.Add(this.IsDeleteHistoryPic);
@@ -783,6 +794,17 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
             // 
+            // IsUseTencentQQ
+            // 
+            this.IsUseTencentQQ.AutoSize = true;
+            this.IsUseTencentQQ.Location = new System.Drawing.Point(209, 45);
+            this.IsUseTencentQQ.Name = "IsUseTencentQQ";
+            this.IsUseTencentQQ.Size = new System.Drawing.Size(119, 21);
+            this.IsUseTencentQQ.TabIndex = 3;
+            this.IsUseTencentQQ.Text = "使用QQ远程调用";
+            this.IsUseTencentQQ.UseVisualStyleBackColor = true;
+            this.IsUseTencentQQ.CheckedChanged += new System.EventHandler(this.IsUseTencentQQ_CheckedChanged);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -892,5 +914,7 @@
         private System.Windows.Forms.ToolStripMenuItem 中ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 高ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 深入研究ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem 接入QQToolStripMenuItem1;
+        private System.Windows.Forms.CheckBox IsUseTencentQQ;
     }
 }

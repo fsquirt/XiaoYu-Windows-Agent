@@ -64,6 +64,7 @@ namespace XiaoYu_LAM.AgentEngine
 
         // 定义对外暴露的回调事件
         public event Action<string> OnStreamText;
+        public event Action<string> OnTextResponse;      // 完整输出
         public event Action<string> OnToolCall;
         public event Action<string, string> OnToolResult;
         public event Action<string, string> OnLog; // role, msg
@@ -103,17 +104,19 @@ namespace XiaoYu_LAM.AgentEngine
         public async Task RunTaskAsync(string userInput)
         {
             _cts = new CancellationTokenSource();
+            // 用于暂存本次回复的纯文本，最后触发 OnTextResponse
+            StringBuilder currentTurnText = new StringBuilder();
+
             try
             {
                 if (CurrentSession == null) CurrentSession = await MsafEngine.XiaoYuAgent.CreateSessionAsync();
 
-                //OnLog?.Invoke("System", $"开始执行任务: {userInput}");
                 _sessionHistoryLog.AppendLine($"\n【用户指令】: {userInput}");
-
                 string currentToolCall = "";
 
-                // 使用流式，完美实现一边说一边做
+                // 使用 RunStreamingAsync 保持流式，避免 DeepThink 报错
                 var updates = MsafEngine.XiaoYuAgent.RunStreamingAsync(userInput, CurrentSession, cancellationToken: _cts.Token);
+
                 await foreach (var update in updates)
                 {
                     foreach (var content in update.Contents)
@@ -121,7 +124,8 @@ namespace XiaoYu_LAM.AgentEngine
                         if (content is TextContent textContent && !string.IsNullOrEmpty(textContent.Text))
                         {
                             OnStreamText?.Invoke(textContent.Text);
-                            _sessionHistoryLog.Append(textContent.Text); // 记录思考过程
+                            currentTurnText.Append(textContent.Text);
+                            _sessionHistoryLog.Append(textContent.Text);
                         }
                         else if (content is FunctionCallContent functionCall)
                         {
@@ -133,13 +137,17 @@ namespace XiaoYu_LAM.AgentEngine
                         {
                             string res = functionResult.Result?.ToString() ?? "";
                             OnToolResult?.Invoke(currentToolCall, res);
-                            // 截断过长结果，防止总结时超出Token
                             if (res.Length > 200) res = res.Substring(0, 200) + "...";
                             _sessionHistoryLog.AppendLine($"[工具结果] {res}");
                         }
                     }
                 }
-                //OnLog?.Invoke("System", "当前指令执行完毕。");
+
+                // 循环结束后，如果攒下了文本，触发一次完整响应事件
+                if (currentTurnText.Length > 0)
+                {
+                    OnTextResponse?.Invoke(currentTurnText.ToString());
+                }
             }
             catch (TaskCanceledException) { OnLog?.Invoke("System", "任务已被手动终止。"); }
             catch (Exception ex) { OnLog?.Invoke("Error", ex.Message); }

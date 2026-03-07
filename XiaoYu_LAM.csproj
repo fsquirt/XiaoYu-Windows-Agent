@@ -278,6 +278,7 @@
     <Compile Include="AgentEngine\AgentRunner.cs" />
     <Compile Include="AgentEngine\ConfigManager.cs" />
     <Compile Include="AgentEngine\IPCManager.cs" />
+    <Compile Include="AgentEngine\TencentQQ.cs" />
     <Compile Include="Properties\Resources.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -294,6 +295,12 @@
     </Compile>
     <Compile Include="UserForm\AeroSetupAPIWizard.Designer.cs">
       <DependentUpon>AeroSetupAPIWizard.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserForm\AeroSetupQQWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UserForm\AeroSetupQQWizard.Designer.cs">
+      <DependentUpon>AeroSetupQQWizard.cs</DependentUpon>
     </Compile>
     <Compile Include="UserForm\ChatForm.cs">
       <SubType>Form</SubType>
@@ -327,6 +334,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="UserForm\AeroSetupAPIWizard.resx">
       <DependentUpon>AeroSetupAPIWizard.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="UserForm\AeroSetupQQWizard.resx">
+      <DependentUpon>AeroSetupQQWizard.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="UserForm\ChatForm.resx">
       <DependentUpon>ChatForm.cs</DependentUpon>

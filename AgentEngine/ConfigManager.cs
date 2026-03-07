@@ -27,6 +27,12 @@ namespace XiaoYu_LAM.AgentEngine
 
         public static int ThinkingDeepth { get; set; } = 3;
 
+        // QQ配置
+        public static long QqAdminQQ { get; set; } = 0;
+        public static string QqBotToken { get; set; } = "";
+        public static string QqBotUrl { get; set; } = "";
+        public static string QqBotPort { get; set; } = "";
+
         private static string ConfigPath => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "config.ini");
 
         public static void LoadConfig()
@@ -53,6 +59,10 @@ namespace XiaoYu_LAM.AgentEngine
                     case "IS_DEL_HISTORY_PIC": IsDeleteHistoryPic = value.Equals("True", StringComparison.OrdinalIgnoreCase); break;
                     case "IS_HIDE_UIA": IsHideUIAoutInChatForm = value.Equals("True", StringComparison.OrdinalIgnoreCase); break;
                     case "THINKING_DEEPTH":if (int.TryParse(value, out int depth)) {ThinkingDeepth = depth;} break;
+                    case "ADMINQQ": long.TryParse(value, out long qq); QqAdminQQ = qq; break;
+                    case "LLBOTTOKEN": QqBotToken = value; break;
+                    case "LLBOTURL": QqBotUrl = value; break;
+                    case "LLBOTPORT": QqBotPort = value; break;
                 }
             }
         }
@@ -75,7 +85,13 @@ namespace XiaoYu_LAM.AgentEngine
                 $"IS_DEEP_THINK={IsDeepThinkMode}",
                 $"IS_DEL_HISTORY_PIC={IsDeleteHistoryPic}",
                 $"IS_HIDE_UIA={IsHideUIAoutInChatForm}",
-                $"THINKING_DEEPTH={ThinkingDeepth}"
+                $"THINKING_DEEPTH={ThinkingDeepth}",
+                "",
+                "[QQ]",
+                $"ADMINQQ={QqAdminQQ}",
+                $"LLBOTTOKEN={QqBotToken}",
+                $"LLBOTURL={QqBotUrl}",
+                $"LLBOTPORT={QqBotPort}"
             };
             File.WriteAllLines(ConfigPath, lines, Encoding.UTF8);
         }
