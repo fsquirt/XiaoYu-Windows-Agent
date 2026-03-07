@@ -28,8 +28,6 @@ namespace XiaoYu_LAM.UserForm
 
         private void UseRemoteLLMProvider_Click(object sender, EventArgs e)
         {
-            // `SelectedPage` 的 set 访问器不可访问（internal），因此不能直接赋值。
-            // 使用公共方法 NextPage 来切换到指定页面，且加上范围检查以防止异常。
             if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
             {
                 wizardControl1.NextPage(wizardControl1.Pages[1]);

@@ -920,10 +920,5 @@ namespace XiaoYu_LAM
             }
         }
 
-        private void openClawToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            OpenClaw openClaWizard = new OpenClaw();
-            openClaWizard.ShowDialog();
-        }
     }
 }

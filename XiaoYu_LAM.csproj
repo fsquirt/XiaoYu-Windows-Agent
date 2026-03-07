@@ -323,12 +323,6 @@
       <DependentUpon>Win32APIDesktop.cs</DependentUpon>
     </Compile>
     <Compile Include="UIAEngine\mainEngine.cs" />
-    <Compile Include="UserForm\OpenClaw.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Include="UserForm\OpenClaw.Designer.cs">
-      <DependentUpon>OpenClaw.cs</DependentUpon>
-    </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <EmbeddedResource Include="UserForm\AeroSetupAPIWizard.resx">
@@ -345,9 +339,6 @@
     </EmbeddedResource>
     <EmbeddedResource Include="ToolForm\Win32APIDesktop.resx">
       <DependentUpon>Win32APIDesktop.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="UserForm\OpenClaw.resx">
-      <DependentUpon>OpenClaw.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>

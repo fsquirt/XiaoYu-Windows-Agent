@@ -46,7 +46,6 @@
             this.高ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.深入研究ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.openClawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.查看VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.帮助HToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -198,8 +197,7 @@
             // 
             this.选项OToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.接入QQToolStripMenuItem,
-            this.设置ToolStripMenuItem,
-            this.openClawToolStripMenuItem});
+            this.设置ToolStripMenuItem});
             this.选项OToolStripMenuItem.Name = "选项OToolStripMenuItem";
             this.选项OToolStripMenuItem.Size = new System.Drawing.Size(62, 21);
             this.选项OToolStripMenuItem.Text = "选项(O)";
@@ -219,35 +217,35 @@
             // 无ToolStripMenuItem
             // 
             this.无ToolStripMenuItem.Name = "无ToolStripMenuItem";
-            this.无ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.无ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.无ToolStripMenuItem.Text = "无";
             this.无ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 低ToolStripMenuItem
             // 
             this.低ToolStripMenuItem.Name = "低ToolStripMenuItem";
-            this.低ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.低ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.低ToolStripMenuItem.Text = "低";
             this.低ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 中ToolStripMenuItem
             // 
             this.中ToolStripMenuItem.Name = "中ToolStripMenuItem";
-            this.中ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.中ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.中ToolStripMenuItem.Text = "中";
             this.中ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 高ToolStripMenuItem
             // 
             this.高ToolStripMenuItem.Name = "高ToolStripMenuItem";
-            this.高ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.高ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.高ToolStripMenuItem.Text = "高";
             this.高ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
             // 深入研究ToolStripMenuItem
             // 
             this.深入研究ToolStripMenuItem.Name = "深入研究ToolStripMenuItem";
-            this.深入研究ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.深入研究ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.深入研究ToolStripMenuItem.Text = "深入研究";
             this.深入研究ToolStripMenuItem.Click += new System.EventHandler(this.SetThinkingDepth_Click);
             // 
@@ -257,13 +255,6 @@
             this.设置ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.设置ToolStripMenuItem.Text = "设置";
             this.设置ToolStripMenuItem.Click += new System.EventHandler(this.设置ToolStripMenuItem_Click);
-            // 
-            // openClawToolStripMenuItem
-            // 
-            this.openClawToolStripMenuItem.Name = "openClawToolStripMenuItem";
-            this.openClawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
-            this.openClawToolStripMenuItem.Text = "OpenClaw";
-            this.openClawToolStripMenuItem.Click += new System.EventHandler(this.openClawToolStripMenuItem_Click);
             // 
             // 查看VToolStripMenuItem
             // 
@@ -901,6 +892,5 @@
         private System.Windows.Forms.ToolStripMenuItem 中ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 高ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 深入研究ToolStripMenuItem;
-        private System.Windows.Forms.ToolStripMenuItem openClawToolStripMenuItem;
     }
 }
