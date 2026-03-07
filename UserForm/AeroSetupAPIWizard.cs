@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -31,7 +32,7 @@ namespace XiaoYu_LAM.UserForm
             // 使用公共方法 NextPage 来切换到指定页面，且加上范围检查以防止异常。
             if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
             {
-                wizardControl1.NextPage(wizardControl1.Pages[2]);
+                wizardControl1.NextPage(wizardControl1.Pages[1]);
             }
         }
 
@@ -39,7 +40,7 @@ namespace XiaoYu_LAM.UserForm
         {
             if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
             {
-                wizardControl1.NextPage(wizardControl1.Pages[4]);
+                wizardControl1.NextPage(wizardControl1.Pages[3]);
             }
             ConfigManager.Protocol = "OpenAI";
             ConfigManager.SaveConfig();
@@ -49,7 +50,7 @@ namespace XiaoYu_LAM.UserForm
         {
             if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
             {
-                wizardControl1.NextPage(wizardControl1.Pages[4]);
+                wizardControl1.NextPage(wizardControl1.Pages[3]);
             }
             ConfigManager.Protocol = "Anthropic";
         }
@@ -79,7 +80,7 @@ namespace XiaoYu_LAM.UserForm
 
                     richTextBox1.Text = richTextBox1.Text + "配置有效";
 
-                    wizardControl1.Pages[4].AllowNext = true;
+                    wizardControl1.Pages[3].AllowNext = true;
                 }
                 else if (ConfigManager.Protocol == "Anthropic")
                 {
@@ -88,20 +89,14 @@ namespace XiaoYu_LAM.UserForm
                 else
                 {
                     MessageBox.Show("发生错误：检测不到有效的协议类型", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
-                    {
-                        wizardControl1.NextPage(wizardControl1.Pages[1]);
-                    }
+                    SetupFailed();
                 }
 
             }
             catch (Exception ex)
             {
                 MessageBox.Show("发生错误：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
-                {
-                    wizardControl1.NextPage(wizardControl1.Pages[1]);
-                }
+                SetupFailed();
             }
         }
 
@@ -126,7 +121,7 @@ namespace XiaoYu_LAM.UserForm
             ConfigManager.SaveConfig();
             if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
             {
-                wizardControl1.NextPage(wizardControl1.Pages[6]);
+                wizardControl1.NextPage(wizardControl1.Pages[5]);
             }
         }
 
@@ -137,7 +132,7 @@ namespace XiaoYu_LAM.UserForm
             ConfigManager.SaveConfig();
             if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
             {
-                wizardControl1.NextPage(wizardControl1.Pages[6]);
+                wizardControl1.NextPage(wizardControl1.Pages[5]);
             }
         }
 
@@ -148,7 +143,7 @@ namespace XiaoYu_LAM.UserForm
             ConfigManager.SaveConfig();
             if (wizardControl1 != null && wizardControl1.Pages != null && wizardControl1.Pages.Count > 2)
             {
-                wizardControl1.NextPage(wizardControl1.Pages[6]);
+                wizardControl1.NextPage(wizardControl1.Pages[5]);
             }
         }
 
@@ -160,6 +155,18 @@ namespace XiaoYu_LAM.UserForm
         private void FinishIWizardPage_Commit(object sender, AeroWizard.WizardPageConfirmEventArgs e)
         {
             this.DialogResult = DialogResult.OK;
+        }
+
+        private void AeroSetupAPIWizard_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void SetupFailed()
+        {
+            //删除程序根目录下config.ini
+            File.Delete(Environment.CurrentDirectory + "\\config.ini");
+            Environment.Exit(0);
         }
     }
 }
