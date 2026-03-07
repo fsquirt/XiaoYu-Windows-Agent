@@ -108,6 +108,9 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Accessibility" />
+    <Reference Include="AeroWizard, Version=2.3.1.0, Culture=neutral, PublicKeyToken=915e74f5d64b8f37, processorArchitecture=MSIL">
+      <HintPath>packages\AeroWizard.2.3.1\lib\net45\AeroWizard.dll</HintPath>
+    </Reference>
     <Reference Include="Anthropic, Version=12.8.0.0, Culture=neutral, PublicKeyToken=f8f088d62f9f3514, processorArchitecture=MSIL">
       <HintPath>packages\Anthropic.12.8.0\lib\netstandard2.0\Anthropic.dll</HintPath>
     </Reference>
@@ -119,6 +122,9 @@
     </Reference>
     <Reference Include="FlaUI.UIA3, Version=5.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\FlaUI.UIA3.5.0.0\lib\net48\FlaUI.UIA3.dll</HintPath>
+    </Reference>
+    <Reference Include="GroupControls, Version=1.9.0.0, Culture=neutral, PublicKeyToken=3726d9da21b6ac8f, processorArchitecture=MSIL">
+      <HintPath>packages\GroupControls.1.9.0\lib\net45\GroupControls.dll</HintPath>
     </Reference>
     <Reference Include="Interop.UIAutomationClient, Version=10.0.19041.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>packages\Interop.UIAutomationClient.10.19041.0\lib\net45\Interop.UIAutomationClient.dll</HintPath>
@@ -204,6 +210,7 @@
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Design" />
     <Reference Include="System.Diagnostics.DiagnosticSource, Version=10.0.0.3, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>packages\System.Diagnostics.DiagnosticSource.10.0.3\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
     </Reference>
@@ -282,11 +289,20 @@
     <Compile Include="UIAEngine\ScannerManager.cs" />
     <Compile Include="UIAEngine\UiaContext.cs" />
     <Compile Include="UIAEngine\WindowManager.cs" />
+    <Compile Include="UserForm\AeroSetupAPIWizard.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="UserForm\AeroSetupAPIWizard.Designer.cs">
+      <DependentUpon>AeroSetupAPIWizard.cs</DependentUpon>
+    </Compile>
     <Compile Include="UserForm\ChatForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Compile Include="UserForm\ChatForm.Designer.cs">
       <DependentUpon>ChatForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="UserForm\CommandLink.cs">
+      <SubType>Component</SubType>
     </Compile>
     <Compile Include="UserForm\MainForm.cs">
       <SubType>Form</SubType>
@@ -307,14 +323,17 @@
       <DependentUpon>Win32APIDesktop.cs</DependentUpon>
     </Compile>
     <Compile Include="UIAEngine\mainEngine.cs" />
-    <Compile Include="UserForm\WelcomeForm.cs">
+    <Compile Include="UserForm\OpenClaw.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UserForm\WelcomeForm.Designer.cs">
-      <DependentUpon>WelcomeForm.cs</DependentUpon>
+    <Compile Include="UserForm\OpenClaw.Designer.cs">
+      <DependentUpon>OpenClaw.cs</DependentUpon>
     </Compile>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <EmbeddedResource Include="UserForm\AeroSetupAPIWizard.resx">
+      <DependentUpon>AeroSetupAPIWizard.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="UserForm\ChatForm.resx">
       <DependentUpon>ChatForm.cs</DependentUpon>
     </EmbeddedResource>
@@ -327,8 +346,8 @@
     <EmbeddedResource Include="ToolForm\Win32APIDesktop.resx">
       <DependentUpon>Win32APIDesktop.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UserForm\WelcomeForm.resx">
-      <DependentUpon>WelcomeForm.cs</DependentUpon>
+    <EmbeddedResource Include="UserForm\OpenClaw.resx">
+      <DependentUpon>OpenClaw.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
       <SubType>Designer</SubType>

@@ -4,6 +4,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
 using XiaoYu_LAM.AgentEngine;
+using XiaoYu_LAM.UserForm;
 
 namespace XiaoYu_LAM
 {
@@ -84,7 +85,20 @@ namespace XiaoYu_LAM
                 string path = AppDomain.CurrentDomain.BaseDirectory + "MarkDown\\conversation";
                 System.IO.Directory.CreateDirectory(path);
 
-                startupForm = new WelcomeForm();
+                // 实例化向导窗口
+                AeroSetupAPIWizard wizard = new AeroSetupAPIWizard();
+
+                // 以对话框模式显示向导 (ShowDialog) 这样代码会暂停在这里，直到向导关闭
+                if (wizard.ShowDialog() == DialogResult.OK)
+                {
+                    // 只有当向导正常完成（返回 OK）时，才启动主窗口
+                    startupForm = new MainForm(taskContent);
+                }
+                else
+                {
+                    // 向导被取消或关闭，直接退出程序
+                    return;
+                }
             }
             else
             {

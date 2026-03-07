@@ -19,6 +19,8 @@ using System.Windows.Forms;
 using XiaoYu_LAM.AgentEngine;
 using XiaoYu_LAM.ToolForm;
 using XiaoYu_LAM.UIAEngine;
+using XiaoYu_LAM.UserForm;
+
 
 namespace XiaoYu_LAM
 {
@@ -916,6 +918,12 @@ namespace XiaoYu_LAM
             {
                 MessageBox.Show($"无法打开帮助页面: {ex.Message}", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void openClawToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            OpenClaw openClaWizard = new OpenClaw();
+            openClaWizard.ShowDialog();
         }
     }
 }

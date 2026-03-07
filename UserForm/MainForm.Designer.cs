@@ -46,6 +46,7 @@
             this.高ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.深入研究ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.openClawToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.查看VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.帮助HToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -197,7 +198,8 @@
             // 
             this.选项OToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.接入QQToolStripMenuItem,
-            this.设置ToolStripMenuItem});
+            this.设置ToolStripMenuItem,
+            this.openClawToolStripMenuItem});
             this.选项OToolStripMenuItem.Name = "选项OToolStripMenuItem";
             this.选项OToolStripMenuItem.Size = new System.Drawing.Size(62, 21);
             this.选项OToolStripMenuItem.Text = "选项(O)";
@@ -211,7 +213,7 @@
             this.高ToolStripMenuItem,
             this.深入研究ToolStripMenuItem});
             this.接入QQToolStripMenuItem.Name = "接入QQToolStripMenuItem";
-            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.接入QQToolStripMenuItem.Text = "思考深度";
             // 
             // 无ToolStripMenuItem
@@ -252,9 +254,16 @@
             // 设置ToolStripMenuItem
             // 
             this.设置ToolStripMenuItem.Name = "设置ToolStripMenuItem";
-            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.设置ToolStripMenuItem.Text = "设置";
             this.设置ToolStripMenuItem.Click += new System.EventHandler(this.设置ToolStripMenuItem_Click);
+            // 
+            // openClawToolStripMenuItem
+            // 
+            this.openClawToolStripMenuItem.Name = "openClawToolStripMenuItem";
+            this.openClawToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.openClawToolStripMenuItem.Text = "OpenClaw";
+            this.openClawToolStripMenuItem.Click += new System.EventHandler(this.openClawToolStripMenuItem_Click);
             // 
             // 查看VToolStripMenuItem
             // 
@@ -283,14 +292,14 @@
             // 查看帮助ToolStripMenuItem
             // 
             this.查看帮助ToolStripMenuItem.Name = "查看帮助ToolStripMenuItem";
-            this.查看帮助ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.查看帮助ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.查看帮助ToolStripMenuItem.Text = "查看帮助";
             this.查看帮助ToolStripMenuItem.Click += new System.EventHandler(this.查看帮助ToolStripMenuItem_Click);
             // 
             // 关于晓予ToolStripMenuItem
             // 
             this.关于晓予ToolStripMenuItem.Name = "关于晓予ToolStripMenuItem";
-            this.关于晓予ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.关于晓予ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.关于晓予ToolStripMenuItem.Text = "关于晓予";
             this.关于晓予ToolStripMenuItem.Click += new System.EventHandler(this.关于晓予ToolStripMenuItem_Click);
             // 
@@ -892,5 +901,6 @@
         private System.Windows.Forms.ToolStripMenuItem 中ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 高ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 深入研究ToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem openClawToolStripMenuItem;
     }
 }
