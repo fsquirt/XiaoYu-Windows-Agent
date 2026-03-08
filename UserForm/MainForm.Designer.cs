@@ -48,6 +48,7 @@
             this.设置ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.接入QQToolStripMenuItem1 = new System.Windows.Forms.ToolStripMenuItem();
             this.查看VToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.审计日志ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.刷新ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.帮助HToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.查看帮助ToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -269,10 +270,18 @@
             // 查看VToolStripMenuItem
             // 
             this.查看VToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.刷新ToolStripMenuItem});
+            this.刷新ToolStripMenuItem,
+            this.审计日志ToolStripMenuItem});
             this.查看VToolStripMenuItem.Name = "查看VToolStripMenuItem";
             this.查看VToolStripMenuItem.Size = new System.Drawing.Size(60, 21);
             this.查看VToolStripMenuItem.Text = "查看(V)";
+            // 
+            // 审计日志ToolStripMenuItem
+            // 
+            this.审计日志ToolStripMenuItem.Name = "审计日志ToolStripMenuItem";
+            this.审计日志ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
+            this.审计日志ToolStripMenuItem.Text = "审计日志";
+            this.审计日志ToolStripMenuItem.Click += new System.EventHandler(this.审计日志ToolStripMenuItem_Click);
             // 
             // 刷新ToolStripMenuItem
             // 
@@ -916,5 +925,6 @@
         private System.Windows.Forms.ToolStripMenuItem 深入研究ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 接入QQToolStripMenuItem1;
         private System.Windows.Forms.CheckBox IsUseTencentQQ;
+        private System.Windows.Forms.ToolStripMenuItem 审计日志ToolStripMenuItem;
     }
 }

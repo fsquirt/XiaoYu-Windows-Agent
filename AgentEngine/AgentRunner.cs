@@ -107,6 +107,9 @@ namespace XiaoYu_LAM.AgentEngine
             // 用于暂存本次回复的纯文本，最后触发 OnTextResponse
             StringBuilder currentTurnText = new StringBuilder();
 
+            // 开始审计会话
+            AuditLogger.StartNewSession(userInput);
+
             try
             {
                 if (CurrentSession == null) CurrentSession = await MsafEngine.XiaoYuAgent.CreateSessionAsync();
@@ -132,11 +135,19 @@ namespace XiaoYu_LAM.AgentEngine
                             currentToolCall = functionCall.Name;
                             OnToolCall?.Invoke(currentToolCall);
                             _sessionHistoryLog.AppendLine($"\n[调用工具] {functionCall.Name}");
+                            
+                            // 审计日志：只记录非 UIA 操作的工具调用
+                            // UIA 操作（点击、输入等）由 InteractionManager 详细记录，避免重复
+                            if (!IsUIAOperationTool(functionCall.Name))
+                            {
+                                AuditLogger.LogToolCall(functionCall.Name, functionCall.Arguments?.ToString());
+                            }
                         }
                         else if (content is FunctionResultContent functionResult)
                         {
                             string res = functionResult.Result?.ToString() ?? "";
                             OnToolResult?.Invoke(currentToolCall, res);
+                            // 注意：工具结果已在 InteractionManager 中通过 LogUIAOperation 详细记录，此处不再重复
                             if (res.Length > 200) res = res.Substring(0, 200) + "...";
                             _sessionHistoryLog.AppendLine($"[工具结果] {res}");
                         }
@@ -147,14 +158,26 @@ namespace XiaoYu_LAM.AgentEngine
                 if (currentTurnText.Length > 0)
                 {
                     OnTextResponse?.Invoke(currentTurnText.ToString());
+                    AuditLogger.LogLLMResponse(currentTurnText.ToString());
                 }
             }
-            catch (TaskCanceledException) { OnLog?.Invoke("System", "任务已被手动终止。"); }
-            catch (Exception ex) { OnLog?.Invoke("Error", ex.Message); }
+            catch (TaskCanceledException) 
+            { 
+                OnLog?.Invoke("System", "任务已被手动终止。");
+                AuditLogger.LogUserIntervention("任务终止", "用户取消了任务执行");
+            }
+            catch (Exception ex) 
+            { 
+                OnLog?.Invoke("Error", ex.Message);
+                AuditLogger.LogError("AgentRunner", "任务执行异常", ex);
+            }
             finally
             {
                 _cts?.Dispose();
                 _cts = null;
+                
+                // 结束审计会话
+                AuditLogger.EndSession();
             }
         }
 
@@ -197,9 +220,28 @@ namespace XiaoYu_LAM.AgentEngine
             }
         }
         
+        // 判断是否为 UIA 操作类型的工具（这些工具的详情由 InteractionManager 记录）
+        private static bool IsUIAOperationTool(string toolName)
+        {
+            return toolName switch
+            {
+                "PerformAction" => true,
+                "MouseClick" => true,
+                "DoubleClick" => true,
+                "RightClick" => true,
+                "SetValue" => true,
+                "TypeText" => true,
+                "PressKey" => true,
+                "Scroll" => true,
+                "ScrollWithKeyboard" => true,
+                _ => false
+            };
+        }
+        
         public void CancelTask()
         {
             _cts?.Cancel();
+            AuditLogger.LogUserIntervention("取消任务", "用户主动取消当前任务");
         }
 
         public async Task RestoreSessionAsync(string filePath)
