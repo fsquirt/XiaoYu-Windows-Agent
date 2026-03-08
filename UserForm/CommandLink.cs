@@ -18,7 +18,6 @@ namespace XiaoYu_LAM
 
         public CommandLink()
         {
-            // 关键：必须设置为 System 样式，否则 CommandLink 样式不生效
             this.FlatStyle = FlatStyle.System;
         }
 

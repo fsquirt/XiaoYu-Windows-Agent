@@ -361,3 +361,7 @@ MigrationBackup/
 
 # Fody - auto-generated XML schema
 FodyWeavers.xsd
+
+# 忽略 Rust 编译产物
+RustTLSProxy/target/
+RustTLSProxy/*.dll

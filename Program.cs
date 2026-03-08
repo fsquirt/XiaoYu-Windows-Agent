@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Security.Principal;
 using System.Threading;
 using System.Windows.Forms;
@@ -13,6 +14,9 @@ namespace XiaoYu_LAM
         static Mutex _mutex; [STAThread]
         static void Main(string[] args)
         {
+
+            ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls13;
+
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
 
@@ -46,6 +50,9 @@ namespace XiaoYu_LAM
 
             // 加载配置
             ConfigManager.LoadConfig();
+
+            // 初始化 TLS 代理管理器
+            ProxyManager.InitializeOrUpdate();
 
             // 检查启动参数 --task
             string taskContent = null;

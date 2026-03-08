@@ -53,7 +53,7 @@ namespace XiaoYu_LAM.AgentEngine
             }
 
             string modelName = ConfigManager.ModelName;
-            string apiUrl = ConfigManager.ApiUrl;
+            string apiUrl = ProxyManager.GetEffectiveApiUrl();
             string apiKey = ConfigManager.ApiKey;
             string protocol = ConfigManager.Protocol;
             bool isdeepseek = ConfigManager.IsDeepThinkMode;

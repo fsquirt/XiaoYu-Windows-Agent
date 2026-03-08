@@ -58,6 +58,9 @@ namespace XiaoYu_LAM.UserForm
             // 验证API有效性
             try
             {
+                string rawApiUrl = ConfigManager.ApiUrl;
+                string safeApiUrl = ProxyManager.GetTemporaryProxyUrl(rawApiUrl);
+
                 if (ConfigManager.Protocol == "OpenAI")
                 {
                     ChatClient client = new ChatClient(
@@ -65,7 +68,7 @@ namespace XiaoYu_LAM.UserForm
                         credential: new ApiKeyCredential(ConfigManager.ApiKey),
                         options: new OpenAIClientOptions()
                         {
-                            Endpoint = new Uri(ConfigManager.ApiUrl)
+                            Endpoint = new Uri(safeApiUrl)
                         });
 
                     richTextBox1.Text = richTextBox1.Text + "正在等待" + ConfigManager.ApiUrl + "响应\n";

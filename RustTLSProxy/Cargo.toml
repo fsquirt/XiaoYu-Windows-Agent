@@ -1,0 +1,14 @@
+[package]
+name = "RustTLSProxy"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+url = "=2.5.0"
+indexmap = "=2.2.6"
+reqwest = { version = "0.11", default-features = false, features = ["blocking", "rustls-tls", "json"] }
+tiny_http = "0.12"
+serde_json = "1.0"

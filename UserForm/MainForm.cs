@@ -364,7 +364,7 @@ namespace XiaoYu_LAM
 
         private void 关于晓予ToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            string appName = "Windows晓予 0.1(Beta)";
+            string appName = "Windows晓予 0.2.1";
             string otherStuff = "https://github.com/fsquirt/XiaoYu-Windows-Agent\n基于无障碍接口让LLM操作Windows";
             IntPtr iconHandle = this.Icon != null ? this.Icon.Handle : IntPtr.Zero;
 
@@ -788,6 +788,9 @@ namespace XiaoYu_LAM
                 string API_KEY = ApiKeyTextBox.Text;
                 string MODEL_NAME = ModelNameTextBox.Text;
 
+                // 获取安全的代理URL（如果是Win7/8会自动转成 127.0.0.1:xxx）
+                string safeApiUrl = ProxyManager.GetTemporaryProxyUrl(API_URL);
+
                 if (IsOpenAICheckBox.Checked)
                 {
                     ChatClient client = new ChatClient(
@@ -795,7 +798,7 @@ namespace XiaoYu_LAM
                         credential: new ApiKeyCredential(API_KEY),
                         options: new OpenAIClientOptions()
                         {
-                            Endpoint = new Uri(API_URL)
+                            Endpoint = new Uri(safeApiUrl)
                         });
 
                     ChatCompletion completion = client.CompleteChat("速速回我任意内容，我正在测试和你的聊天API是否正常");
@@ -808,7 +811,7 @@ namespace XiaoYu_LAM
                 }
                 else if (IsAnthropicCheckBox.Checked)
                 {
-                    AnthropicClient client = new AnthropicClient { ApiKey = API_KEY, BaseUrl = API_URL };
+                    AnthropicClient client = new AnthropicClient { ApiKey = API_KEY, BaseUrl = safeApiUrl };
                     IChatClient chatClient = client.AsIChatClient(MODEL_NAME)
                         .AsBuilder()
                         .UseFunctionInvocation()
@@ -832,7 +835,6 @@ namespace XiaoYu_LAM
                 MessageBox.Show("发生错误：" + ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 VerifyConfigButton.Text = "失败";
             }
-
         }
 
         private void StopButton_Click(object sender, EventArgs e)

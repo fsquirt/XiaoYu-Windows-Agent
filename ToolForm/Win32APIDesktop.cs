@@ -29,7 +29,7 @@ namespace XiaoYu_LAM.ToolForm
         {
             public Int32 cb;
             public string lpReserved;
-            public string lpDesktop; // 关键：指定桌面名称
+            public string lpDesktop; // 指定桌面名称
             public string lpTitle;
             public Int32 dwX;
             public Int32 dwY;
@@ -104,7 +104,7 @@ namespace XiaoYu_LAM.ToolForm
             // 2. 配置启动参数
             STARTUPINFO si = new STARTUPINFO();
             si.cb = Marshal.SizeOf(si);
-            // 关键点：指定 "WinSta0\\桌面名"
+            // 指定 "WinSta0\\桌面名"
             si.lpDesktop = "winsta0\\" + desktopName;
 
             PROCESS_INFORMATION pi = new PROCESS_INFORMATION();

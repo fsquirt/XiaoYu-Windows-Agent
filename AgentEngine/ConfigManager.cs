@@ -94,6 +94,9 @@ namespace XiaoYu_LAM.AgentEngine
                 $"LLBOTPORT={QqBotPort}"
             };
             File.WriteAllLines(ConfigPath, lines, Encoding.UTF8);
+
+            // 配置保存完毕后，通知代理管理器检查并更新代理状态
+            ProxyManager.InitializeOrUpdate();
         }
     }
 }
