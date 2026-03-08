@@ -101,7 +101,7 @@ namespace XiaoYu_LAM.AgentEngine
             MsafEngine.CreateAgent(UiaEngine);
         }
 
-        public async Task RunTaskAsync(string userInput)
+        public async Task RunTaskAsync(string userInput, string sessionFilePath = null)
         {
             _cts = new CancellationTokenSource();
             // 用于暂存本次回复的纯文本，最后触发 OnTextResponse
@@ -109,6 +109,14 @@ namespace XiaoYu_LAM.AgentEngine
 
             try
             {
+                if (!string.IsNullOrEmpty(sessionFilePath))
+                {
+                    // 将 .md 换成 .zip
+                    string auditPath = sessionFilePath.Replace(".md", ".zip");
+                    AuditManager.StartRecording(auditPath);
+                }
+
+
                 if (CurrentSession == null) CurrentSession = await MsafEngine.XiaoYuAgent.CreateSessionAsync();
 
                 _sessionHistoryLog.AppendLine($"\n【用户指令】: {userInput}");
@@ -153,6 +161,8 @@ namespace XiaoYu_LAM.AgentEngine
             catch (Exception ex) { OnLog?.Invoke("Error", ex.Message); }
             finally
             {
+                AuditManager.StopRecording();
+
                 _cts?.Dispose();
                 _cts = null;
             }

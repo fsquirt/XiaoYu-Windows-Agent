@@ -273,6 +273,7 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AgentEngine\AuditManager.cs" />
     <Compile Include="AgentEngine\MemoryManager.cs" />
     <Compile Include="AgentEngine\MSAFEngine.cs" />
     <Compile Include="AgentEngine\ProxyManager.cs" />

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Security.Principal;
 using System.Threading;
@@ -50,6 +51,12 @@ namespace XiaoYu_LAM
 
             // 加载配置
             ConfigManager.LoadConfig();
+
+            // 杀死所有PSR
+            foreach (var proc in Process.GetProcessesByName("psr"))
+            {
+                try { proc.Kill(); } catch { }
+            }
 
             // 初始化 TLS 代理管理器
             ProxyManager.InitializeOrUpdate();

@@ -85,20 +85,34 @@ namespace XiaoYu_LAM
 
             ChatListView.Items.Clear();
 
-            // 获取所有 .md 文件
             DirectoryInfo dir = new DirectoryInfo(targetPath);
             FileInfo[] files = dir.GetFiles("*.md");
 
-            foreach (FileInfo file in files)
+            // 按时间倒序，方便看到最新的
+            var sortedFiles = files.OrderByDescending(f => f.CreationTime);
+
+            foreach (FileInfo file in sortedFiles)
             {
-                // 解析 ChatTitle (取第一个 '_' 前的内容)
                 string fileName = Path.GetFileNameWithoutExtension(file.Name);
                 string chatTitle = fileName.Contains("_") ? fileName.Split('_')[0] : fileName;
 
-                // 创建 ListViewItem
-                ListViewItem item = new ListViewItem(chatTitle); // 第一列
-                item.SubItems.Add(file.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")); // 第二列
-                item.SubItems.Add(file.FullName); // 第三列 (绝对路径)
+                // 创建行
+                ListViewItem item = new ListViewItem(chatTitle); // 标题
+                item.SubItems.Add(file.CreationTime.ToString("yyyy-MM-dd HH:mm:ss")); // 时间
+                item.SubItems.Add(file.FullName); // MD绝对路径
+
+                // 检查是否存在对应的审计文件 
+                string auditZipPath = file.FullName.Replace(".md", ".zip");
+                if (File.Exists(auditZipPath))
+                {
+                    item.SubItems.Add(auditZipPath); // 审计文件路径
+                    item.ForeColor = Color.Black; // 有审计记录的设为正常颜色
+                }
+                else
+                {
+                    item.SubItems.Add("无记录");
+                    item.ForeColor = Color.Gray; // 没审计记录的变灰
+                }
 
                 ChatListView.Items.Add(item);
             }
@@ -160,6 +174,22 @@ namespace XiaoYu_LAM
                 }
             };
 
+            ToolStripMenuItem openAuditItem = new ToolStripMenuItem("查看操作审计(PSR)");
+            openAuditItem.Click += (s, e) =>
+            {
+                foreach (ListViewItem item in ChatListView.SelectedItems)
+                {
+                    string zipPath = item.SubItems[3].Text;
+                    if (File.Exists(zipPath))
+                    {
+                        // 直接调用 explorer 打开 zip 包
+                        Process.Start("explorer.exe", $"/select,\"{zipPath}\"");
+                        // Process.Start(zipPath); 
+                    }
+                }
+            };
+
+            menu.Items.Add(openAuditItem);
             menu.Items.Add(openItem);
             menu.Items.Add(deleteItem);
 

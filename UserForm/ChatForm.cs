@@ -292,15 +292,22 @@ namespace XiaoYu_LAM
                 _currentFileName = $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.md";
             }
 
-            // 调用 Runner
-            await _runner.RunTaskAsync(userInput);
-
-            // 备份历史
-            if (!string.IsNullOrEmpty(_currentFileName))
+            // 确定文件名
+            if (string.IsNullOrEmpty(_currentFileName))
             {
-                string filePath = Path.Combine(_sessionDirectory, _currentFileName);
-                await _runner.BackupSessionAsync(filePath, ConversationRichTextBox.Text);
+                string safeInput = string.Join("_", userInput.Split(Path.GetInvalidFileNameChars())).Replace("\r", "").Replace("\n", "").Replace(" ", "");
+                string title = safeInput.Length > 15 ? safeInput.Substring(0, 15) : safeInput;
+                _currentFileName = $"{title}_{DateTime.Now:yyyyMMdd_HHmmss}.md";
             }
+
+            // 获取完整的路径传给 Runner
+            string currentFullMdPath = Path.Combine(_sessionDirectory, _currentFileName);
+
+            // 调用 Runner，传入路径以便开启同名的审计包
+            await _runner.RunTaskAsync(userInput, currentFullMdPath);
+
+            // 保存 MD 文件
+            await _runner.BackupSessionAsync(currentFullMdPath, ConversationRichTextBox.Text);
 
             btnExecute.Enabled = true;
             btnStop.Enabled = false;

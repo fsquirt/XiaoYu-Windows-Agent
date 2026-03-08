@@ -85,6 +85,7 @@
             this.AddSkillsPathButton = new System.Windows.Forms.Button();
             this.IsUseAgentSkills = new System.Windows.Forms.CheckBox();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.IsUseTencentQQ = new System.Windows.Forms.CheckBox();
             this.IsDeepThinkMode = new System.Windows.Forms.CheckBox();
             this.IsHideUIAoutInChatForm = new System.Windows.Forms.CheckBox();
             this.IsDeleteHistoryPic = new System.Windows.Forms.CheckBox();
@@ -100,7 +101,7 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.IsUseTencentQQ = new System.Windows.Forms.CheckBox();
+            this.AuditFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -214,7 +215,7 @@
             this.高ToolStripMenuItem,
             this.深入研究ToolStripMenuItem});
             this.接入QQToolStripMenuItem.Name = "接入QQToolStripMenuItem";
-            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.接入QQToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.接入QQToolStripMenuItem.Text = "思考深度";
             // 
             // 无ToolStripMenuItem
@@ -255,14 +256,14 @@
             // 设置ToolStripMenuItem
             // 
             this.设置ToolStripMenuItem.Name = "设置ToolStripMenuItem";
-            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.设置ToolStripMenuItem.Size = new System.Drawing.Size(124, 22);
             this.设置ToolStripMenuItem.Text = "设置";
             this.设置ToolStripMenuItem.Click += new System.EventHandler(this.设置ToolStripMenuItem_Click);
             // 
             // 接入QQToolStripMenuItem1
             // 
             this.接入QQToolStripMenuItem1.Name = "接入QQToolStripMenuItem1";
-            this.接入QQToolStripMenuItem1.Size = new System.Drawing.Size(180, 22);
+            this.接入QQToolStripMenuItem1.Size = new System.Drawing.Size(124, 22);
             this.接入QQToolStripMenuItem1.Text = "接入QQ";
             this.接入QQToolStripMenuItem1.Click += new System.EventHandler(this.接入QQToolStripMenuItem1_Click);
             // 
@@ -496,7 +497,8 @@
             this.ChatListView.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.ChatTitle,
             this.ChatCreateTime,
-            this.ChatMarkDownFile});
+            this.ChatMarkDownFile,
+            this.AuditFile});
             this.ChatListView.Dock = System.Windows.Forms.DockStyle.Fill;
             this.ChatListView.FullRowSelect = true;
             this.ChatListView.GridLines = true;
@@ -516,12 +518,12 @@
             // ChatCreateTime
             // 
             this.ChatCreateTime.Text = "创建时间";
-            this.ChatCreateTime.Width = 200;
+            this.ChatCreateTime.Width = 155;
             // 
             // ChatMarkDownFile
             // 
             this.ChatMarkDownFile.Text = "文件路径";
-            this.ChatMarkDownFile.Width = 392;
+            this.ChatMarkDownFile.Width = 161;
             // 
             // tabPage7
             // 
@@ -635,6 +637,17 @@
             this.groupBox3.TabIndex = 2;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "对话设置";
+            // 
+            // IsUseTencentQQ
+            // 
+            this.IsUseTencentQQ.AutoSize = true;
+            this.IsUseTencentQQ.Location = new System.Drawing.Point(209, 45);
+            this.IsUseTencentQQ.Name = "IsUseTencentQQ";
+            this.IsUseTencentQQ.Size = new System.Drawing.Size(119, 21);
+            this.IsUseTencentQQ.TabIndex = 3;
+            this.IsUseTencentQQ.Text = "使用QQ远程调用";
+            this.IsUseTencentQQ.UseVisualStyleBackColor = true;
+            this.IsUseTencentQQ.CheckedChanged += new System.EventHandler(this.IsUseTencentQQ_CheckedChanged);
             // 
             // IsDeepThinkMode
             // 
@@ -794,16 +807,10 @@
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
             // 
-            // IsUseTencentQQ
+            // AuditFile
             // 
-            this.IsUseTencentQQ.AutoSize = true;
-            this.IsUseTencentQQ.Location = new System.Drawing.Point(209, 45);
-            this.IsUseTencentQQ.Name = "IsUseTencentQQ";
-            this.IsUseTencentQQ.Size = new System.Drawing.Size(119, 21);
-            this.IsUseTencentQQ.TabIndex = 3;
-            this.IsUseTencentQQ.Text = "使用QQ远程调用";
-            this.IsUseTencentQQ.UseVisualStyleBackColor = true;
-            this.IsUseTencentQQ.CheckedChanged += new System.EventHandler(this.IsUseTencentQQ_CheckedChanged);
+            this.AuditFile.Text = "审计文件";
+            this.AuditFile.Width = 262;
             // 
             // MainForm
             // 
@@ -916,5 +923,6 @@
         private System.Windows.Forms.ToolStripMenuItem 深入研究ToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem 接入QQToolStripMenuItem1;
         private System.Windows.Forms.CheckBox IsUseTencentQQ;
+        private System.Windows.Forms.ColumnHeader AuditFile;
     }
 }
