@@ -75,6 +75,7 @@
             this.ChatTitle = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ChatCreateTime = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.ChatMarkDownFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
+            this.AuditFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.tabPage7 = new System.Windows.Forms.TabPage();
             this.button7 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
@@ -101,7 +102,6 @@
             this.label3 = new System.Windows.Forms.Label();
             this.label2 = new System.Windows.Forms.Label();
             this.label1 = new System.Windows.Forms.Label();
-            this.AuditFile = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.statusStrip1.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
@@ -525,6 +525,11 @@
             this.ChatMarkDownFile.Text = "文件路径";
             this.ChatMarkDownFile.Width = 161;
             // 
+            // AuditFile
+            // 
+            this.AuditFile.Text = "审计文件";
+            this.AuditFile.Width = 262;
+            // 
             // tabPage7
             // 
             this.tabPage7.Controls.Add(this.button7);
@@ -761,6 +766,7 @@
             this.ApiKeyTextBox.Font = new System.Drawing.Font("Consolas", 8.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point, ((byte)(0)));
             this.ApiKeyTextBox.Location = new System.Drawing.Point(67, 47);
             this.ApiKeyTextBox.Name = "ApiKeyTextBox";
+            this.ApiKeyTextBox.PasswordChar = '*';
             this.ApiKeyTextBox.Size = new System.Drawing.Size(423, 20);
             this.ApiKeyTextBox.TabIndex = 5;
             // 
@@ -806,11 +812,6 @@
             this.label1.Size = new System.Drawing.Size(54, 17);
             this.label1.TabIndex = 0;
             this.label1.Text = "API地址:";
-            // 
-            // AuditFile
-            // 
-            this.AuditFile.Text = "审计文件";
-            this.AuditFile.Width = 262;
             // 
             // MainForm
             // 
